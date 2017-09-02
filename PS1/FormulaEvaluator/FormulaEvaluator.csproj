@@ -41,6 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Evaluator.cs" />
+    <Compile Include="Operators\Arithmetic\DivisionArithmeticOperator.cs" />
+    <Compile Include="Operators\Arithmetic\MultiplicationArithmeticOperator.cs" />
+    <Compile Include="Operators\Arithmetic\SubtractionArithmeticOperator.cs" />
+    <Compile Include="Operators\Arithmetic\AdditionArithmeticOperator.cs" />
+    <Compile Include="Operators\Arithmetic\ArithmeticOperator.cs" />
+    <Compile Include="Operators\GroupingOperator.cs" />
+    <Compile Include="Operators\Operator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
