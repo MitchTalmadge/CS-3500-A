@@ -236,7 +236,7 @@ namespace FormulaEvaluator
 
             // Pop two values and compute them against the operator. Store the result in the value stack.
             var values = PopTwoValues(valueStack);
-            valueStack.Push(arithmeticOperator.Compute(values.Item1, values.Item2));
+            valueStack.Push(arithmeticOperator.Compute(values.Item2, values.Item1));
         }
 
         /// <summary>

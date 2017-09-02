@@ -32,10 +32,22 @@ namespace FormulaEvaluatorTests
         }
 
         /// <summary>
-        /// Tests the evaluation of some simple expressions that do not contain any variables or edge cases.
+        /// Tests expressions which contain a single operation.
         /// </summary>
         [TestMethod]
-        public void TestEvaluationOfSimpleExpressions()
+        public void TestSingleOperations()
+        {
+            AssertEvaluation(15, "10 + 5");
+            AssertEvaluation(5, "10 - 5");
+            AssertEvaluation(100, "10 * 10");
+            AssertEvaluation(50, "100 / 2");
+        }
+
+        /// <summary>
+        /// Tests expressions which contain multiple operations.
+        /// </summary>
+        [TestMethod]
+        public void TestComplexOperations()
         {
             AssertEvaluation(27, "(2 + 3) * 5 + 2");
         }
