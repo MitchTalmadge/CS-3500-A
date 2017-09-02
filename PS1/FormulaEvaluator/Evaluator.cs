@@ -85,30 +85,31 @@ namespace FormulaEvaluator
                 {
                     var currentOperator = OperatorDict[token];
                     // Determine the type of Operator.
-                    if (currentOperator is GroupingOperator groupingOperator)
+                    switch (currentOperator)
                     {
-                        // This is a Grouping Operator, i.e. parentheses. 
+                        case GroupingOperator groupingOperator:
+                            // This is a Grouping Operator, i.e. parentheses. 
 
-                        // Check if the grouping operator opens or closes the group.
-                        if (groupingOperator.OpensGroup)
-                        {
-                            // Opens the group. Simply add to the stack.
-                            operatorStack.Push(groupingOperator);
-                        }
-                        else
-                        {
-                            // Closes the group. 
-                            CloseGroup(valueStack, operatorStack);
-                        }
-                    }
-                    else if (currentOperator is ArithmeticOperator arithmeticOperator)
-                    {
-                        if (arithmeticOperator.HighLevel)
-                        {
-                        }
-                        else
-                        {
-                        }
+                            // Check if the grouping operator opens or closes the group.
+                            if (groupingOperator.OpensGroup)
+                            {
+                                // Opens the group. Simply add to the stack.
+                                operatorStack.Push(groupingOperator);
+                            }
+                            else
+                            {
+                                // Closes the group. 
+                                CloseGroup(valueStack, operatorStack);
+                            }
+                            break;
+                        case ArithmeticOperator arithmeticOperator:
+                            if (arithmeticOperator.HighLevel)
+                            {
+                            }
+                            else
+                            {
+                            }
+                            break;
                     }
                 }
                 else
@@ -116,23 +117,34 @@ namespace FormulaEvaluator
                     // Check if the token is a variable/value
                     if (ExpressionVariableRegex.IsMatch(token))
                     {
-                        // This is a variable. Determine its true value.
-                        valueStack.Push(variableEvaluator(token));
+                        // This is a variable. Determine its true value and add it to the stack.
+                        AddValueToStack(variableEvaluator(token), valueStack);
                     }
                     else if (int.TryParse(token, out var value))
                     {
-                        // This is a normal integer.
-                        valueStack.Push(value);
+                        // This is a normal integer. Add it to the stack.
+                        AddValueToStack(value, valueStack);
                     }
                     else
                     {
-                        // At this point, we have run out of options. Cannot parse this token.
-                        throw new InvalidOperationException("A token was not recognized as an operation or a value: " + token);
+                        // At this point, we have run out of options for parsing. Cannot parse this token.
+                        throw new ArgumentException("A token was not recognized as an operation or a value: " + token,
+                            nameof(expression));
                     }
                 }
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Adds a new value to the top of the valueStack, and performs any needed computations.
+        /// </summary>
+        /// <param name="value">The value to add to the stack.</param>
+        /// <param name="valueStack">The stack to add the value to.</param>
+        private static void AddValueToStack(int value, Stack<int> valueStack)
+        {
+            valueStack.Push(value);
         }
 
         /// <summary>
@@ -144,25 +156,24 @@ namespace FormulaEvaluator
         {
             // Check that there is an Arithmetic Operator to compute within the group.
             if (operatorStack.Peek() is ArithmeticOperator)
-            { 
+            {
                 // Perform computation.
-                ComputeWithTopOperator(valueStack, operatorStack);
+                ComputeTopOperatorWithTopValues(valueStack, operatorStack);
             }
 
             // Check for a closing Group Operator to remove.
             if (!(operatorStack.Pop() is GroupingOperator groupingOperator && groupingOperator.OpensGroup))
             {
-                throw new InvalidOperationException(
-                    "Could not find an opening group operator to close. Is the expression missing a parenthesis?");
+                throw new ArgumentException(
+                    "Could not find an opening Group Operator to close.", nameof(operatorStack));
             }
 
             // Check if there is a high level Arithmetic Operator that needs to be computed.
             if (operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
             {
                 // Perform computation.
-                ComputeWithTopOperator(valueStack, operatorStack);
+                ComputeTopOperatorWithTopValues(valueStack, operatorStack);
             }
-
         }
 
         /// <summary>
@@ -173,7 +184,7 @@ namespace FormulaEvaluator
         /// </summary>
         /// <param name="valueStack">The stack containing at least two values.</param>
         /// <param name="operatorStack">The stack containing an Arithmetic Operator at the top.</param>
-        private static void ComputeWithTopOperator(Stack<int> valueStack, Stack<Operator> operatorStack)
+        private static void ComputeTopOperatorWithTopValues(Stack<int> valueStack, Stack<Operator> operatorStack)
         {
             if (operatorStack.Pop() is ArithmeticOperator arithmeticOperator)
             {
@@ -183,8 +194,8 @@ namespace FormulaEvaluator
                 return;
             }
 
-            throw new InvalidOperationException(
-                "The Operator at the top of the operatorStack was not an Arithmetic Operator.");
+            throw new ArgumentException(
+                "The Operator at the top of the stack was not an Arithmetic Operator.", nameof(operatorStack));
         }
 
         /// <summary>
@@ -201,7 +212,7 @@ namespace FormulaEvaluator
             }
             catch (InvalidOperationException e)
             {
-                throw new InvalidOperationException("There are not enough values to pop.", e);
+                throw new ArgumentException("There are not enough values to pop.", nameof(valueStack), e);
             }
         }
     }
