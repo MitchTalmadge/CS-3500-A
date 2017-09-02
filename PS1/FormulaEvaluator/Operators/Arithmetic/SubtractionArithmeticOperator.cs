@@ -10,12 +10,8 @@ namespace FormulaEvaluator.Operators.Arithmetic
     /// <summary>
     /// An Arithmetic Operator that performs subtraction.
     /// </summary>
-    class SubtractionArithmeticOperator : ArithmeticOperator
+    internal class SubtractionArithmeticOperator : ArithmeticOperator
     {
-        public SubtractionArithmeticOperator() : base("-")
-        {
-        }
-
         public override int Compute(int left, int right)
         {
             return left - right;

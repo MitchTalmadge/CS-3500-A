@@ -1,21 +1,28 @@
 ﻿namespace FormulaEvaluator.Operators.Arithmetic
 {
-    abstract class ArithmeticOperator : Operator
+    internal abstract class ArithmeticOperator : Operator
     {
         /// <summary>
-        /// Determines if this Arithmetic Operator is considered "high level",
-        /// or in other words, should be computed before anything else.
+        /// Determines if this Arithmetic Operator is considered "high-level",
+        /// or in other words, should be computed before other operators.
         /// </summary>
         public bool HighLevel { get; }
+
+        /// <summary>
+        /// Determines if this Arithmetic Operator is considered "low-level",
+        /// or in other words, will be computed last; after other high-level operators.
+        /// </summary>
+        public bool LowLevel => !HighLevel;
 
         /// <inheritdoc />
         /// <summary>
         /// Constructs an Arithmetic Operator with the given token,
-        /// and with the option to be marked as high level.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="highLevel"></param>
-        protected ArithmeticOperator(string token, bool highLevel = false) : base(token)
+        /// <param name="highLevel">
+        /// Whether or not this Arithmetic Operator is high-level, 
+        /// meaning that it should be computed before other operators.
+        /// </param>
+        protected ArithmeticOperator(bool highLevel = false)
         {
             HighLevel = highLevel;
         }

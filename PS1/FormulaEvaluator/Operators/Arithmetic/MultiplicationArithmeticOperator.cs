@@ -10,9 +10,9 @@ namespace FormulaEvaluator.Operators.Arithmetic
     /// <summary>
     /// An Arithmetic Operator that performs multiplication.
     /// </summary>
-    class MultiplicationArithmeticOperator : ArithmeticOperator
+    internal class MultiplicationArithmeticOperator : ArithmeticOperator
     {
-        public MultiplicationArithmeticOperator() : base("*", true)
+        internal MultiplicationArithmeticOperator() : base(true)
         {
         }
 

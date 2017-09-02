@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace FormulaEvaluator.Operators.Arithmetic
 {
-
     /// <summary>
     /// An Arithmetic Operator that performs division.
     /// </summary>
-    class DivisionArithmeticOperator : ArithmeticOperator
+    internal class DivisionArithmeticOperator : ArithmeticOperator
     {
-        public DivisionArithmeticOperator() : base("/", true)
+        internal DivisionArithmeticOperator() : base(true)
         {
         }
 

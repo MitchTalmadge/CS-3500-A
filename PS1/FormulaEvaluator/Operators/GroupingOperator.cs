@@ -10,19 +10,18 @@ namespace FormulaEvaluator.Operators
     /// <summary>
     /// Grouping Operators are used to "group" parts of expressions together. Most commonly, they would be parentheses.
     /// </summary>
-    class GroupingOperator : Operator
+    internal class GroupingOperator : Operator
     {
         /// <summary>
         /// Determines if this is the left brace, which opens the group.
         /// </summary>
-        public bool OpensGroup => Token == "(";
+        public bool OpensGroup { get; }
 
         /// <summary>
         /// Determines if this is the right brace, which closes the group.
         /// </summary>
-        public bool ClosesGroup => Token == ")";
+        public bool ClosesGroup => !OpensGroup;
 
-        /// <inheritdoc />
         /// <summary>
         /// Constructs a Grouping Operator.
         /// </summary>
@@ -30,8 +29,9 @@ namespace FormulaEvaluator.Operators
         /// Whether this operator closes the group. 
         /// Defaults to false, meaning that this operator opens the group.
         /// </param>
-        public GroupingOperator(bool closeGroup = false) : base(!closeGroup ? "(" : ")")
+        public GroupingOperator(bool closeGroup = false)
         {
+            OpensGroup = !closeGroup;
         }
     }
 }
