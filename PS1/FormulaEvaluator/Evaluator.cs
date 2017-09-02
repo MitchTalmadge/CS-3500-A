@@ -43,14 +43,9 @@ namespace FormulaEvaluator
         private static readonly Regex ExpressionVariableRegex = new Regex(@"^[a-zA-Z]+\d+$");
 
         /// <summary>
-        /// A Regex pattern for removing all whitespace from an expression.
-        /// </summary>
-        private static readonly Regex ExpressionWhitespaceRemovalRegex = new Regex(@"\s");
-
-        /// <summary>
         /// A Regex pattern for splitting expressions into individual tokens.
         /// </summary>
-        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"(\()|(\))|(-)|(\+)|(\*)|(/)");
+        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"(\()|(\))|(-)|(\+)|(\*)|(/)|(\s+)");
 
         /// <summary>
         /// Evaluates a string-based integer arithmetic expression and returns the integer result.
@@ -65,9 +60,6 @@ namespace FormulaEvaluator
         /// <returns></returns>
         public static int Evaluate(string expression, Lookup variableEvaluator)
         {
-            // Remove all whitespace from the expression
-            expression = ExpressionWhitespaceRemovalRegex.Replace(expression, "");
-
             // Split the expression up into individual tokens.
             var tokens = ExpressionTokenSplitRegex.Split(expression);
 
@@ -81,7 +73,7 @@ namespace FormulaEvaluator
             foreach (var token in tokens)
             {
                 // Skip empty tokens.
-                if (token == "")
+                if (token.Trim().Length == 0)
                     continue;
 
                 // Check if this token is an operator.

@@ -68,7 +68,22 @@ namespace FormulaEvaluatorTests
         [TestMethod]
         public void TestVariables()
         {
-            AssertEvaluation(10, "AA10 + AB5 + CD3");
+            AssertEvaluation(10, "AA10 + aB5 + Cd3");
+            AssertEvaluation(14, "AB25 + 10");
+            AssertEvaluation(60, "(a10 + b12) * 10");
+            AssertEvaluation(30, "(7 + 3) * A14");
+        }
+
+        /// <summary>
+        /// Tests expressions containing nothing more than a single value.
+        /// </summary>
+        [TestMethod]
+        public void TestNoOperations()
+        {
+            AssertEvaluation(10, "10");
+            AssertEvaluation(20, "(20)");
+            AssertEvaluation(3, "A12");
+            AssertEvaluation(4, "(AB12)");
         }
     }
 }
