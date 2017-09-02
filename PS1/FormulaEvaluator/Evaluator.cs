@@ -118,8 +118,7 @@ namespace FormulaEvaluator
                                 /* For non-high-level Arithmetic Operators, 
                                    we must first check for another non-high-level Arithmetic Operator
                                    at the top of the stack. */
-                                if (operatorStack.Count > 0 && operatorStack.Peek() is ArithmeticOperator otherArithmeticOperator &&
-                                    !otherArithmeticOperator.HighLevel)
+                                if (IsArithmeticAtTop(operatorStack, true))
                                 {
                                     ComputeTopOperatorWithTopValues(valueStack, operatorStack);
                                 }
@@ -153,8 +152,7 @@ namespace FormulaEvaluator
             }
 
             // Clear out the last remaining non-high-level Arithmetic Operator if there is one.
-            if (operatorStack.Count == 1 && operatorStack.Peek() is ArithmeticOperator lastOperator &&
-                !lastOperator.HighLevel)
+            if (operatorStack.Count == 1 && IsArithmeticAtTop(operatorStack, false, true))
             {
                 ComputeTopOperatorWithTopValues(valueStack, operatorStack);
             }
@@ -186,7 +184,7 @@ namespace FormulaEvaluator
             valueStack.Push(value);
 
             // Check for a high-level Arithmetic Operator at the top of the stack.
-            if (operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
+            if (IsArithmeticAtTop(operatorStack, true))
             {
                 // Operator found. Perform computation.
                 ComputeTopOperatorWithTopValues(valueStack, operatorStack);
@@ -201,7 +199,7 @@ namespace FormulaEvaluator
         private static void CloseGroup(Stack<int> valueStack, Stack<Operator> operatorStack)
         {
             // Check that there is an Arithmetic Operator to compute within the group.
-            if (operatorStack.Peek() is ArithmeticOperator)
+            if (IsArithmeticAtTop(operatorStack))
             {
                 // Perform computation.
                 ComputeTopOperatorWithTopValues(valueStack, operatorStack);
@@ -214,8 +212,8 @@ namespace FormulaEvaluator
                     "Could not find an opening Group Operator to close.", nameof(operatorStack));
             }
 
-            // Check if there is a high level Arithmetic Operator that needs to be computed.
-            if (operatorStack.Count > 0 && operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
+            // Check if there is a high-level Arithmetic Operator that needs to be computed.
+            if (IsArithmeticAtTop(operatorStack, true))
             {
                 // Perform computation.
                 ComputeTopOperatorWithTopValues(valueStack, operatorStack);
@@ -239,6 +237,42 @@ namespace FormulaEvaluator
             // Pop two values and compute them against the operator. Store the result in the value stack.
             var values = PopTwoValues(valueStack);
             valueStack.Push(arithmeticOperator.Compute(values.Item1, values.Item2));
+        }
+
+        /// <summary>
+        /// Determines if the Operator at the top of the operatorStack is an Arithmetic Operator,
+        /// and optionally, if it is high or low level.
+        /// 
+        /// (Note: if both highLevel and lowLevel are true, highLevel takes prescendence.)
+        /// </summary>
+        /// <param name="operatorStack">The Operator stack.</param>
+        /// <param name="highLevel">Set to true to require that the Operator is high level.</param>
+        /// <param name="lowLevel">Set to true to require that the Operator is low level.</param>
+        /// <returns>True if the Operator at the top matches, false otherwise.</returns>
+        private static bool IsArithmeticAtTop(Stack<Operator> operatorStack, bool highLevel = false,
+            bool lowLevel = false)
+        {
+            // Check that we have any operators at all.
+            if (operatorStack.Count == 0)
+                return false;
+
+            // Check if the type is correct.
+            if (operatorStack.Peek() is ArithmeticOperator arithmeticOperator)
+            {
+                // If we don't care about high or low level, we have succeeded.
+                if (!highLevel && !lowLevel)
+                    return true;
+
+                // If we care that it's high level, return whether or not it is.
+                if (highLevel)
+                    return arithmeticOperator.HighLevel;
+
+                // We must care that it's low level, so return whether or not it is.
+                return !arithmeticOperator.HighLevel;
+            }
+
+            // Not Arithmetic Operator at all.
+            return false;
         }
 
         /// <summary>
