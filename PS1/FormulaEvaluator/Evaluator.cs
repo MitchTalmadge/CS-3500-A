@@ -6,6 +6,12 @@ using FormulaEvaluator.Operators.Arithmetic;
 
 namespace FormulaEvaluator
 {
+    /// <summary>
+    /// This class provides a static method, Evaluate, which is used to evaluate infix expressions.
+    /// The expressions may also contain variables, such as "AB2".
+    /// 
+    /// The main purpose of this class is to provide the functionality for evaluating expressions in a spreadsheet application.
+    /// </summary>
     public static class Evaluator
     {
         /// <summary>
@@ -266,12 +272,8 @@ namespace FormulaEvaluator
                 if (!highLevel && !lowLevel)
                     return true;
 
-                // If we care that it's high level, return whether or not it is.
-                if (highLevel)
-                    return arithmeticOperator.HighLevel;
-
-                // We must care that it's low level, so return whether or not it is.
-                return !arithmeticOperator.HighLevel;
+                // Either highLevel or lowLevel is true, so determine which and return the result.
+                return highLevel ? arithmeticOperator.HighLevel : arithmeticOperator.LowLevel;
             }
 
             // Not Arithmetic Operator at all.

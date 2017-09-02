@@ -16,7 +16,7 @@ namespace FormulaEvaluatorTests
         /// </summary>
         /// <param name="variable">The variable to evaluate.</param>
         /// <returns>The length of the variable.</returns>
-        private int GetDummySpreadsheetValue(string variable)
+        private static int GetDummySpreadsheetValue(string variable)
         {
             return variable.Length;
         }
@@ -26,7 +26,7 @@ namespace FormulaEvaluatorTests
         /// </summary>
         /// <param name="expression">The expression to evaluate.</param>
         /// <returns>The result of the evaluation.</returns>
-        private int Evaluate(string expression)
+        private static int Evaluate(string expression)
         {
             return Evaluator.Evaluate(expression, GetDummySpreadsheetValue);
         }
@@ -36,7 +36,7 @@ namespace FormulaEvaluatorTests
         /// </summary>
         /// <param name="expectedResult">The expected result after evaluation.</param>
         /// <param name="expression">The expression to evaluate.</param>
-        private void AssertEvaluation(int expectedResult, string expression)
+        private static void AssertEvaluation(int expectedResult, string expression)
         {
             Assert.AreEqual(expectedResult, Evaluate(expression));
         }
@@ -61,6 +61,25 @@ namespace FormulaEvaluatorTests
         {
             AssertEvaluation(27, "(2 + 3) * 5 + 2");
             AssertEvaluation(1, "10 / (5 * 2)");
+        }
+
+        /// <summary>
+        /// Tests expressions which may evaluate incorrectly if the order of operations are not correct.
+        /// </summary>
+        [TestMethod]
+        public void TestOrderOfOperations()
+        {
+            // Multiplication
+            AssertEvaluation(30, "5 + 5 * 5");
+            AssertEvaluation(90, "10 * 10 - 10");
+
+            // Division
+            AssertEvaluation(6, "5 + 5 / 5");
+            AssertEvaluation(-9, "10 / 10 - 10");
+
+            // Parentheses
+            AssertEvaluation(50, "(5 + 5) * 5");
+            AssertEvaluation(2, "10 / (10 - 5)");
         }
 
         /// <summary>
