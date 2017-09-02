@@ -118,7 +118,7 @@ namespace FormulaEvaluator
                                 /* For non-high-level Arithmetic Operators, 
                                    we must first check for another non-high-level Arithmetic Operator
                                    at the top of the stack. */
-                                if (IsArithmeticAtTop(operatorStack, true))
+                                if (IsArithmeticAtTop(operatorStack, false, true))
                                 {
                                     ComputeTopOperatorWithTopValues(valueStack, operatorStack);
                                 }

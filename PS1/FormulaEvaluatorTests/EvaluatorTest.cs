@@ -1,5 +1,4 @@
-﻿using System;
-using FormulaEvaluator;
+﻿using FormulaEvaluator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FormulaEvaluatorTests
@@ -50,6 +49,26 @@ namespace FormulaEvaluatorTests
         public void TestComplexOperations()
         {
             AssertEvaluation(27, "(2 + 3) * 5 + 2");
+        }
+
+        /// <summary>
+        /// Tests expressions in which multiple sets of parentheses are nested within each other.
+        /// </summary>
+        [TestMethod]
+        public void TestNestedParentheses()
+        {
+            AssertEvaluation(145, "(10 + (5 + 2) * (10 + 10)) - 5");
+            AssertEvaluation(15, "(((((10 + 5)))))");
+            AssertEvaluation(60, "(((((10 + 5 * (((5 + 5))))))))");
+        }
+
+        /// <summary>
+        /// Tests expressions containing variables.
+        /// </summary>
+        [TestMethod]
+        public void TestVariables()
+        {
+            AssertEvaluation(10, "AA10 + AB5 + CD3");
         }
     }
 }
