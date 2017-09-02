@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using FormulaEvaluator.Operators;
 using FormulaEvaluator.Operators.Arithmetic;
 
@@ -154,10 +151,16 @@ namespace FormulaEvaluator
                 throw new ArgumentException("There are too many operators left-over! Cannot determine a result.",
                     nameof(expression));
 
-            // Check that we do not have too few or too many left-over values.
-            if (valueStack.Count != 1)
+            // Check if there are no values.
+            if (valueStack.Count == 0)
                 throw new ArgumentException(
-                    $"There are {(valueStack.Count < 0 ? "no" : "too many")} values ({valueStack.Count}) left in the stack! Cannot determine a result.",
+                    "There are no values to return. The expression may be empty!",
+                    nameof(expression));
+
+            // Check if there are too many values.
+            if (valueStack.Count > 1)
+                throw new ArgumentException(
+                    $"There are too many values to return ({valueStack.Count}). The expression may be missing an operator!",
                     nameof(expression));
 
             // Finally, return the last remaining value.
@@ -198,7 +201,8 @@ namespace FormulaEvaluator
             }
 
             // Check for a closing Group Operator to remove.
-            if (!(operatorStack.Pop() is GroupingOperator groupingOperator && groupingOperator.OpensGroup))
+            if (operatorStack.Count == 0 ||
+                !(operatorStack.Pop() is GroupingOperator groupingOperator && groupingOperator.OpensGroup))
             {
                 throw new ArgumentException(
                     "Could not find an opening Group Operator to close.", nameof(operatorStack));
@@ -228,7 +232,14 @@ namespace FormulaEvaluator
 
             // Pop two values and compute them against the operator. Store the result in the value stack.
             var values = PopTwoValues(valueStack);
-            valueStack.Push(arithmeticOperator.Compute(values.Item2, values.Item1));
+            try
+            {
+                valueStack.Push(arithmeticOperator.Compute(values.Item2, values.Item1));
+            }
+            catch (DivideByZeroException e)
+            {
+                throw new ArgumentException("The expression contains an attempt to divide by zero.", e);
+            }
         }
 
         /// <summary>
