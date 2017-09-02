@@ -33,6 +33,26 @@ namespace FormulaEvaluator
         };
 
         /// <summary>
+        /// A Regex pattern for matching variables in an expression.
+        /// The pattern will match strings that consist of one or more letters followed by one or more numbers:
+        /// AA10
+        /// AB15
+        /// AAA2450
+        /// ...
+        /// </summary>
+        private static readonly Regex ExpressionVariableRegex = new Regex(@"^[a-zA-Z]+\d+$");
+
+        /// <summary>
+        /// A Regex pattern for removing all whitespace from an expression.
+        /// </summary>
+        private static readonly Regex ExpressionWhitespaceRemovalRegex = new Regex(@"\s");
+
+        /// <summary>
+        /// A Regex pattern for splitting expressions into individual tokens.
+        /// </summary>
+        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"[()+\-*/]");
+
+        /// <summary>
         /// Evaluates a string-based integer arithmetic expression and returns the integer result.
         /// For example, the expression "(2 + 3) * 5 + 2" will return 27.
         /// 
@@ -45,11 +65,11 @@ namespace FormulaEvaluator
         /// <returns></returns>
         public static int Evaluate(string expression, Lookup variableEvaluator)
         {
-            // Remove all whitespace from the expression.
-            expression = Regex.Replace(expression, @"\s", "");
+            // Remove all whitespace from the expression
+            expression = ExpressionWhitespaceRemovalRegex.Replace(expression, "");
 
             // Split the expression up into individual tokens.
-            var tokens = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            var tokens = ExpressionTokenSplitRegex.Split(expression);
 
             // The value stack contains the actual integer values to perform operations on.
             var valueStack = new Stack<int>();
@@ -93,7 +113,22 @@ namespace FormulaEvaluator
                 }
                 else
                 {
-                    // This is either a number or a variable.
+                    // Check if the token is a variable/value
+                    if (ExpressionVariableRegex.IsMatch(token))
+                    {
+                        // This is a variable. Determine its true value.
+                        valueStack.Push(variableEvaluator(token));
+                    }
+                    else if (int.TryParse(token, out var value))
+                    {
+                        // This is a normal integer.
+                        valueStack.Push(value);
+                    }
+                    else
+                    {
+                        // At this point, we have run out of options. Cannot parse this token.
+                        throw new InvalidOperationException("A token was not recognized as an operation or a value: " + token);
+                    }
                 }
             }
 
