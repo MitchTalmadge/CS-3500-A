@@ -103,11 +103,25 @@ namespace FormulaEvaluator
                             }
                             break;
                         case ArithmeticOperator arithmeticOperator:
+                            // Determine the type of Arithmetic Operator.
                             if (arithmeticOperator.HighLevel)
                             {
+                                // For high-level Arithmetic Operators, just add them to the stack.
+                                operatorStack.Push(arithmeticOperator);
                             }
                             else
                             {
+                                /* For non-high-level Arithmetic Operators, 
+                                   we must first check for another non-high-level Arithmetic Operator
+                                   at the top of the stack. */
+                                if (operatorStack.Peek() is ArithmeticOperator otherArithmeticOperator &&
+                                    !otherArithmeticOperator.HighLevel)
+                                {
+                                    ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+                                }
+
+                                // Now we can add this operator to the stack.
+                                operatorStack.Push(arithmeticOperator);
                             }
                             break;
                     }
@@ -118,12 +132,12 @@ namespace FormulaEvaluator
                     if (ExpressionVariableRegex.IsMatch(token))
                     {
                         // This is a variable. Determine its true value and add it to the stack.
-                        AddValueToStack(variableEvaluator(token), valueStack);
+                        AddValueToStack(variableEvaluator(token), valueStack, operatorStack);
                     }
                     else if (int.TryParse(token, out var value))
                     {
                         // This is a normal integer. Add it to the stack.
-                        AddValueToStack(value, valueStack);
+                        AddValueToStack(value, valueStack, operatorStack);
                     }
                     else
                     {
@@ -134,7 +148,26 @@ namespace FormulaEvaluator
                 }
             }
 
-            return 0;
+            // Clear out the last remaining non-high-level Arithmetic Operator if there is one.
+            if (operatorStack.Count == 1 && operatorStack.Peek() is ArithmeticOperator lastOperator &&
+                !lastOperator.HighLevel)
+            {
+                ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+            }
+
+            // Check that we do not have any left-over Operators.
+            if (operatorStack.Count != 0)
+                throw new ArgumentException("There are too many operators left-over! Cannot determine a result.",
+                    nameof(expression));
+
+            // Check that we do not have too few or too many left-over values.
+            if (valueStack.Count != 1)
+                throw new ArgumentException(
+                    $"There are {(valueStack.Count < 0 ? "no" : "too many")} values ({valueStack.Count}) left in the stack! Cannot determine a result.",
+                    nameof(expression));
+
+            // Finally, return the last remaining value.
+            return valueStack.Pop();
         }
 
         /// <summary>
@@ -142,9 +175,18 @@ namespace FormulaEvaluator
         /// </summary>
         /// <param name="value">The value to add to the stack.</param>
         /// <param name="valueStack">The stack to add the value to.</param>
-        private static void AddValueToStack(int value, Stack<int> valueStack)
+        /// <param name="operatorStack">The operator stack, used for computation of high-level arithmetic when required.</param>
+        private static void AddValueToStack(int value, Stack<int> valueStack, Stack<Operator> operatorStack)
         {
+            // Add the value to the stack.
             valueStack.Push(value);
+
+            // Check for a high-level Arithmetic Operator at the top of the stack.
+            if (operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
+            {
+                // Operator found. Perform computation.
+                ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+            }
         }
 
         /// <summary>
@@ -186,16 +228,13 @@ namespace FormulaEvaluator
         /// <param name="operatorStack">The stack containing an Arithmetic Operator at the top.</param>
         private static void ComputeTopOperatorWithTopValues(Stack<int> valueStack, Stack<Operator> operatorStack)
         {
-            if (operatorStack.Pop() is ArithmeticOperator arithmeticOperator)
-            {
-                // Pop two values and compute them against the operator. Store the result in the value stack.
-                var values = PopTwoValues(valueStack);
-                valueStack.Push(arithmeticOperator.Compute(values.Item1, values.Item2));
-                return;
-            }
+            if (!(operatorStack.Pop() is ArithmeticOperator arithmeticOperator))
+                throw new ArgumentException(
+                    "The Operator at the top of the stack was not an Arithmetic Operator.", nameof(operatorStack));
 
-            throw new ArgumentException(
-                "The Operator at the top of the stack was not an Arithmetic Operator.", nameof(operatorStack));
+            // Pop two values and compute them against the operator. Store the result in the value stack.
+            var values = PopTwoValues(valueStack);
+            valueStack.Push(arithmeticOperator.Compute(values.Item1, values.Item2));
         }
 
         /// <summary>
