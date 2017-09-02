@@ -50,7 +50,7 @@ namespace FormulaEvaluator
         /// <summary>
         /// A Regex pattern for splitting expressions into individual tokens.
         /// </summary>
-        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"[()+\-*/]");
+        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"(\()|(\))|(-)|(\+)|(\*)|(/)");
 
         /// <summary>
         /// Evaluates a string-based integer arithmetic expression and returns the integer result.
@@ -80,6 +80,10 @@ namespace FormulaEvaluator
             // Iterate over each token to determine its type and how it should be handled.
             foreach (var token in tokens)
             {
+                // Skip empty tokens.
+                if (token == "")
+                    continue;
+
                 // Check if this token is an operator.
                 if (OperatorDict.ContainsKey(token))
                 {
@@ -114,7 +118,7 @@ namespace FormulaEvaluator
                                 /* For non-high-level Arithmetic Operators, 
                                    we must first check for another non-high-level Arithmetic Operator
                                    at the top of the stack. */
-                                if (operatorStack.Peek() is ArithmeticOperator otherArithmeticOperator &&
+                                if (operatorStack.Count > 0 && operatorStack.Peek() is ArithmeticOperator otherArithmeticOperator &&
                                     !otherArithmeticOperator.HighLevel)
                                 {
                                     ComputeTopOperatorWithTopValues(valueStack, operatorStack);
@@ -142,7 +146,7 @@ namespace FormulaEvaluator
                     else
                     {
                         // At this point, we have run out of options for parsing. Cannot parse this token.
-                        throw new ArgumentException("A token was not recognized as an operation or a value: " + token,
+                        throw new ArgumentException($"A token was not recognized as an operation or a value: {token}",
                             nameof(expression));
                     }
                 }
@@ -211,7 +215,7 @@ namespace FormulaEvaluator
             }
 
             // Check if there is a high level Arithmetic Operator that needs to be computed.
-            if (operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
+            if (operatorStack.Count > 0 && operatorStack.Peek() is ArithmeticOperator arithmeticOperator && arithmeticOperator.HighLevel)
             {
                 // Perform computation.
                 ComputeTopOperatorWithTopValues(valueStack, operatorStack);
