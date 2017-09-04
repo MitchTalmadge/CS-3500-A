@@ -72,6 +72,9 @@ namespace FormulaEvaluator
             // The operator stack contains the Operators that will be applied to the values in the value stack: +, -, /, *, etc.
             var operatorStack = new Stack<Operator>();
 
+            // The Type of the token that was added last. May be one of the Operator types, or int.
+            Type lastAdded = null;
+
             // Iterate over each token to determine its type and how it should be handled.
             foreach (var rawToken in tokens)
             {
@@ -85,7 +88,9 @@ namespace FormulaEvaluator
                 // Check if this token is an operator.
                 if (OperatorDict.ContainsKey(token))
                 {
+                    // Get the correct Operator from the dictionary by its token.
                     var currentOperator = OperatorDict[token];
+
                     // Determine the type of Operator.
                     switch (currentOperator)
                     {
@@ -95,11 +100,9 @@ namespace FormulaEvaluator
                             // Check if the grouping operator opens or closes the group.
                             if (groupingOperator.OpensGroup)
                             {
-                                // Make sure that if there are any values in the stack, we have an Arithmetic Operator in the correct place.
-                                if(valueStack.Count > 0 && operatorStack.Count == 0)
-                                {
-                                    throw new ArgumentException("An arithmetic operator is missing before an opening grouping operator.", nameof(expression));
-                                }
+                                // Make sure there was an Operator added before this opening group. This prevents cases such as: "5 (+ 10)" or "5 (10 + 5)" which are both invalid.
+                                if (lastAdded == typeof(int))
+                                    throw new ArgumentException("An opening grouping operator was added after a number without an operator in between.", nameof(expression));
 
                                 // Opens the group. Simply add to the stack.
                                 operatorStack.Push(groupingOperator);
@@ -132,6 +135,9 @@ namespace FormulaEvaluator
                             }
                             break;
                     }
+
+                    // Record which operator was added.
+                    lastAdded = currentOperator.GetType();
                 }
                 else
                 {
@@ -152,6 +158,9 @@ namespace FormulaEvaluator
                         throw new ArgumentException($"A token was not recognized as an operation or a value: {token}",
                             nameof(expression));
                     }
+
+                    // Record that an integer was added.
+                    lastAdded = typeof(int);
                 }
             }
 

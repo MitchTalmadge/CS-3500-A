@@ -173,6 +173,7 @@ namespace FormulaEvaluatorTests
             Assert.ThrowsException<ArgumentException>(() => Evaluate("5 (+ 10)"));
             Assert.ThrowsException<ArgumentException>(() => Evaluate("5 ((+ 10))"));
             Assert.ThrowsException<ArgumentException>(() => Evaluate("5 ((+ ((10 + 5)) + 10))"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("(5 + (10 + 5 (+ 10)))"));
             Assert.ThrowsException<ArgumentException>(() => Evaluate("+ 5 10"));
             Assert.ThrowsException<ArgumentException>(() => Evaluate("10 5 +"));
         }
