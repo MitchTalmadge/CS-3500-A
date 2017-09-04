@@ -48,7 +48,7 @@ namespace FormulaEvaluator
         /// <summary>
         /// A Regex pattern for splitting expressions into individual tokens.
         /// </summary>
-        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"(\()|(\))|(-)|(\+)|(\*)|(/)|(\s+)");
+        private static readonly Regex ExpressionTokenSplitRegex = new Regex(@"(\()|(\))|(-)|(\+)|(\*)|(/)");
 
         /// <summary>
         /// Evaluates a string-based integer arithmetic expression and returns the integer result.
@@ -73,10 +73,13 @@ namespace FormulaEvaluator
             var operatorStack = new Stack<Operator>();
 
             // Iterate over each token to determine its type and how it should be handled.
-            foreach (var token in tokens)
+            foreach (var rawToken in tokens)
             {
+                // Trim the whitespace from the token.
+                var token = rawToken.Trim();
+
                 // Skip empty tokens.
-                if (token.Trim().Length == 0)
+                if (token.Length == 0)
                     continue;
 
                 // Check if this token is an operator.
@@ -92,6 +95,12 @@ namespace FormulaEvaluator
                             // Check if the grouping operator opens or closes the group.
                             if (groupingOperator.OpensGroup)
                             {
+                                // Make sure that if there are any values in the stack, we have an Arithmetic Operator in the correct place.
+                                if(valueStack.Count > 0 && operatorStack.Count == 0)
+                                {
+                                    throw new ArgumentException("An arithmetic operator is missing before an opening grouping operator.", nameof(expression));
+                                }
+
                                 // Opens the group. Simply add to the stack.
                                 operatorStack.Push(groupingOperator);
                             }
@@ -117,7 +126,7 @@ namespace FormulaEvaluator
                                 {
                                     ComputeTopOperatorWithTopValues(valueStack, operatorStack);
                                 }
-
+                                
                                 // Now we can add this operator to the stack.
                                 operatorStack.Push(arithmeticOperator);
                             }

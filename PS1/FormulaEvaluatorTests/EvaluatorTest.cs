@@ -164,6 +164,20 @@ namespace FormulaEvaluatorTests
         }
 
         /// <summary>
+        /// Tests expressions whose operators are not in the correct place.
+        /// </summary>
+        [TestMethod]
+        public void TestMisplacedOperators()
+        {
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("(10 +) 5"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("5 (+ 10)"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("5 ((+ 10))"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("5 ((+ ((10 + 5)) + 10))"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("+ 5 10"));
+            Assert.ThrowsException<ArgumentException>(() => Evaluate("10 5 +"));
+        }
+
+        /// <summary>
         /// Tests expressions that contain negative numbers, which are not supported.
         /// </summary>
         [TestMethod]
