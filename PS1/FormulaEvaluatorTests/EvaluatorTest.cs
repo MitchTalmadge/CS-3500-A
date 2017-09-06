@@ -61,6 +61,8 @@ namespace FormulaEvaluatorTests
         {
             AssertEvaluation(27, "(2 + 3) * 5 + 2");
             AssertEvaluation(1, "10 / (5 * 2)");
+            AssertEvaluation(23, "((1 + (6 + 4)) + (4 + 8))");
+            AssertEvaluation(0, "10 - (50 - 40)");
         }
 
         /// <summary>
