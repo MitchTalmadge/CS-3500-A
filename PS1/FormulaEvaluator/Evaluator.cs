@@ -60,7 +60,7 @@ namespace FormulaEvaluator
         /// </summary>
         /// <param name="expression">The expression to evaluate. Should not contain negative numbers.</param>
         /// <param name="variableEvaluator">The variable evaluation Lookup delegate.</param>
-        /// <returns></returns>
+        /// <returns>The integer result of the evaluation.</returns>
         public static int Evaluate(string expression, Lookup variableEvaluator)
         {
             // Split the expression up into individual tokens.
