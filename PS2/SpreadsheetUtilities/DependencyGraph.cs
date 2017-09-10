@@ -39,6 +39,13 @@ namespace SpreadsheetUtilities
     /// <author>Mitch Talmadge, u1031378</author>
     public class DependencyGraph
     {
+
+        /// <summary>
+        /// Contains the ordered pairs for the dependency graph. 
+        /// A set is used to prevent duplicates. Tuples are used to link the dependents and dependees.
+        /// </summary>
+        private readonly DependencyContainer _dependencies = new DependencyContainer();
+
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
@@ -50,10 +57,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// The number of ordered pairs in the DependencyGraph.
         /// </summary>
-        public int Size
-        {
-            get { return 0; }
-        }
+        public int Size => _dependencies.Count;
 
 
         /// <summary>
@@ -63,10 +67,7 @@ namespace SpreadsheetUtilities
         /// dg["a"]
         /// It should return the size of dependees("a")
         /// </summary>
-        public int this[string s]
-        {
-            get { return 0; }
-        }
+        public int this[string s] => GetDependees(s).Count();
 
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(string s)
         {
-            return false;
+            return _dependencies.GetDependentsCount(s) > 0;
         }
 
 
@@ -83,7 +84,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {
-            return false;
+            return _dependencies.GetDependeesCount(s) > 0;
         }
 
 
@@ -92,7 +93,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            return _dependencies.GetDependents(s);
         }
 
         /// <summary>
@@ -100,7 +101,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            return _dependencies.GetDependees(s);
         }
 
 
@@ -116,6 +117,7 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t)
         {
+            _dependencies.AddPair(t, s);
         }
 
 
@@ -126,6 +128,7 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
+            _dependencies.RemovePair(t, s);
         }
 
 
@@ -135,6 +138,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            _dependencies.RemoveDependents(s);
+            foreach (var dependent in newDependents)
+                _dependencies.AddPair(dependent, s);
         }
 
 
@@ -144,6 +150,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
+            _dependencies.RemoveDependees(s);
+            foreach (var dependee in newDependees)
+                _dependencies.AddPair(s, dependee);
         }
 
     }
