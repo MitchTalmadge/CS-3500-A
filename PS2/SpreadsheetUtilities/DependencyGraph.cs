@@ -41,8 +41,7 @@ namespace SpreadsheetUtilities
     {
 
         /// <summary>
-        /// Contains the ordered pairs for the dependency graph. 
-        /// A set is used to prevent duplicates. Tuples are used to link the dependents and dependees.
+        /// Contains the ordered pairs for the dependency graph.
         /// </summary>
         private readonly DependencyContainer _dependencies = new DependencyContainer();
 
@@ -53,12 +52,10 @@ namespace SpreadsheetUtilities
         {
         }
 
-
         /// <summary>
         /// The number of ordered pairs in the DependencyGraph.
         /// </summary>
         public int Size => _dependencies.Count;
-
 
         /// <summary>
         /// The size of dependees(s).
@@ -67,92 +64,96 @@ namespace SpreadsheetUtilities
         /// dg["a"]
         /// It should return the size of dependees("a")
         /// </summary>
-        public int this[string s] => GetDependees(s).Count();
+        public int this[string s] => _dependencies.GetDependeesCount(s);
 
 
         /// <summary>
-        /// Reports whether dependents(s) is non-empty.
+        /// Reports whether dependents(s) is non-empty for a given node.
         /// </summary>
-        public bool HasDependents(string s)
+        /// <param name="node">The node to check.</param>
+        /// <returns>True if the node has dependents.</returns>
+        public bool HasDependents(string node)
         {
-            return _dependencies.GetDependentsCount(s) > 0;
+            return _dependencies.GetDependentsCount(node) > 0;
         }
 
 
         /// <summary>
-        /// Reports whether dependees(s) is non-empty.
+        /// Reports whether dependees(s) is non-empty for a given node.
         /// </summary>
-        public bool HasDependees(string s)
+        /// <param name="node">The node to check.</param>
+        /// <returns>True if the node has dependees.</returns>
+        public bool HasDependees(string node)
         {
-            return _dependencies.GetDependeesCount(s) > 0;
+            return _dependencies.GetDependeesCount(node) > 0;
         }
 
 
         /// <summary>
-        /// Enumerates dependents(s).
+        /// Gets an enumerable collection of dependents for a given node.
         /// </summary>
-        public IEnumerable<string> GetDependents(string s)
+        /// <param name="node">The node to retreive dependents of.</param>
+        /// <returns>An enumerable collection of the node's dependents.</returns>
+        public IEnumerable<string> GetDependents(string node)
         {
-            return _dependencies.GetDependents(s);
+            return _dependencies.GetDependents(node);
         }
 
         /// <summary>
-        /// Enumerates dependees(s).
+        /// Gets an enumerable collection of dependees for a given node.
         /// </summary>
-        public IEnumerable<string> GetDependees(string s)
+        /// <param name="node">The node to retreive dependees of.</param>
+        /// <returns>An enumerable collection of the node's dependees.</returns>
+        public IEnumerable<string> GetDependees(string node)
         {
-            return _dependencies.GetDependees(s);
+            return _dependencies.GetDependees(node);
         }
 
-
         /// <summary>
-        /// <para>Adds the ordered pair (s,t), if it doesn't exist</para>
-        /// 
-        /// <para>This should be thought of as:</para>   
-        /// 
-        ///   t depends on s
-        ///
+        /// Adds an ordered pair dependency to the graph if it does not already exist.
         /// </summary>
-        /// <param name="s"> s must be evaluated first. T depends on S</param>
-        /// <param name="t"> t cannot be evaluated until s is</param>        /// 
-        public void AddDependency(string s, string t)
+        /// <param name="dependeeNode">The dependee; i.e. the node that the dependent node depends on.</param>
+        /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>       
+        public void AddDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.AddPair(t, s);
-        }
-
-
-        /// <summary>
-        /// Removes the ordered pair (s,t), if it exists
-        /// </summary>
-        /// <param name="s"></param>
-        /// <param name="t"></param>
-        public void RemoveDependency(string s, string t)
-        {
-            _dependencies.RemovePair(t, s);
+            _dependencies.AddPair(dependentNode, dependeeNode);
         }
 
 
         /// <summary>
-        /// Removes all existing ordered pairs of the form (s,r).  Then, for each
-        /// t in newDependents, adds the ordered pair (s,t).
+        /// Removes an ordered pair dependency from the graph if it exists.
         /// </summary>
-        public void ReplaceDependents(string s, IEnumerable<string> newDependents)
+        /// <param name="dependeeNode">The dependee; i.e. the node that the dependent node depends on.</param>
+        /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>   
+        public void RemoveDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.RemoveDependents(s);
+            _dependencies.RemovePair(dependentNode, dependeeNode);
+        }
+
+
+        /// <summary>
+        /// Replaces all dependents for a given node with the ones provided.
+        /// </summary>
+        /// <param name="node">The node to update.</param>
+        /// <param name="newDependents">A collection containing the new dependents for the node.</param>
+        public void ReplaceDependents(string node, IEnumerable<string> newDependents)
+        {
+            _dependencies.RemoveDependents(node);
             foreach (var dependent in newDependents)
-                _dependencies.AddPair(dependent, s);
+                _dependencies.AddPair(dependent, node);
         }
 
 
         /// <summary>
-        /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
-        /// t in newDependees, adds the ordered pair (t,s).
+        /// Replaces all dependees for a given node with the ones provided.
         /// </summary>
-        public void ReplaceDependees(string s, IEnumerable<string> newDependees)
+        /// <param name="node">The node to update.</param>
+        /// <param name="newDependees">A collection containing the new dependees for the node.</param>
+        public void ReplaceDependees(string node, IEnumerable<string> newDependees)
         {
-            _dependencies.RemoveDependees(s);
+            _dependencies.RemoveDependees(node);
             foreach (var dependee in newDependees)
-                _dependencies.AddPair(s, dependee);
+                _dependencies.AddPair(node, dependee);
         }
 
     }
