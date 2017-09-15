@@ -1,11 +1,10 @@
-﻿using SpreadsheetUtilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SpreadsheetUtilities;
 
 namespace DevelopmentTests
 {
-
     /// <summary>
     /// Tests for the Dependency Graph implementation.
     /// </summary>
@@ -13,175 +12,165 @@ namespace DevelopmentTests
     [TestClass]
     public class DevelopmentTests
     {
-        // ************************** TESTS ON EMPTY DGs ************************* //
-
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void ZeroSize()
+        /// Tests that a newly created graph has a size of 0.
+        /// </summary>
+        [TestMethod]
+        public void TestNewGraphHasSizeZero()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.AreEqual(0, t.Size);
+            Assert.AreEqual(0, new DependencyGraph().Size);
         }
 
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void HasNoDependees()
+        /// Tests that a newly created graph does not contain dependees for any given node.
+        /// </summary>
+        [TestMethod]
+        public void TestNewGraphHasNoDependees()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.IsFalse(t.HasDependees("a"));
+            Assert.IsFalse(new DependencyGraph().HasDependees("a"));
+            Assert.IsFalse(new DependencyGraph().GetDependees("a").GetEnumerator().MoveNext());
         }
 
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void HasNoDependents()
+        /// Tests that a newly created graph does not contain dependents for any given node.
+        /// </summary>
+        [TestMethod]
+        public void TestNewGraphHasNoDependents()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.IsFalse(t.HasDependents("a"));
+            Assert.IsFalse(new DependencyGraph().HasDependents("a"));
+            Assert.IsFalse(new DependencyGraph().GetDependents("a").GetEnumerator().MoveNext());
         }
 
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void EmptyDependees()
+        /// Tests that a newly created graph has a dependees size of 0 for any given node when using the indexer.
+        /// </summary>
+        [TestMethod]
+        public void TestNewGraphHasIndexerSizeZero()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.IsFalse(t.GetDependees("a").GetEnumerator().MoveNext());
+            Assert.AreEqual(0, new DependencyGraph()["a"]);
         }
 
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void EmptyDependents()
+        /// Tests removing a non-existent dependency from a newly created (empty) graph.
+        /// </summary>
+        [TestMethod]
+        public void TestRemoveFromEmptyGraph()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.IsFalse(t.GetDependents("a").GetEnumerator().MoveNext());
+            var graph = new DependencyGraph();
+            graph.RemoveDependency("a", "b");
+            Assert.AreEqual(0, graph.Size);
         }
 
         /// <summary>
-        ///Empty graph should contain nothing
-        ///</summary>
-        [TestMethod()]
-        public void EmptyIndexer()
+        /// Tests adding a new dependency to a newly created (empty) graph.
+        /// </summary>
+        [TestMethod]
+        public void TestAddToEmptyGraph()
         {
-            DependencyGraph t = new DependencyGraph();
-            Assert.AreEqual(0, t["a"]);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            Assert.AreEqual(1, graph.Size);
         }
 
         /// <summary>
-        ///Removing from an empty DG shouldn't fail
-        ///</summary>
-        [TestMethod()]
-        public void RemoveFromEmpty()
+        /// Tests replacing a non-existent node's dependents with an empty set of dependents.
+        /// </summary>
+        [TestMethod]
+        public void TestReplaceMissingNodeWithEmptyDependents()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.RemoveDependency("a", "b");
-            Assert.AreEqual(0, t.Size);
+            var graph = new DependencyGraph();
+            graph.ReplaceDependents("a", new HashSet<string>());
+            Assert.AreEqual(0, graph.Size);
         }
 
         /// <summary>
-        ///Adding to an empty DG shouldn't fail
-        ///</summary>
-        [TestMethod()]
-        public void AddToEmpty()
+        /// Tests replacing a non-existent node's dependees with an empty set of dependees.
+        /// </summary>
+        [TestMethod]
+        public void TestReplaceMissingNodeWithEmptyDependees()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
+            var graph = new DependencyGraph();
+            graph.ReplaceDependees("a", new HashSet<string>());
+            Assert.AreEqual(0, graph.Size);
         }
 
         /// <summary>
-        ///Replace on an empty DG shouldn't fail
-        ///</summary>
-        [TestMethod()]
-        public void ReplaceEmptyDependents()
+        /// Tests that a graph which has dependencies reports a correct size.
+        /// </summary>
+        [TestMethod]
+        public void TestGraphHasCorrectSize()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.ReplaceDependents("a", new HashSet<string>());
-            Assert.AreEqual(0, t.Size);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            Assert.AreEqual(2, graph.Size);
         }
 
         /// <summary>
-        ///Replace on an empty DG shouldn't fail
-        ///</summary>
-        [TestMethod()]
-        public void ReplaceEmptyDependees()
+        /// Tests that adding a duplicate dependency will not alter the graph.
+        /// </summary>
+        [TestMethod]
+        public void TestAddDuplicateDependency()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.ReplaceDependees("a", new HashSet<string>());
-            Assert.AreEqual(0, t.Size);
-        }
-
-
-        /**************************** SIMPLE NON-EMPTY TESTS ****************************/
-
-        /// <summary>
-        ///Non-empty graph contains something
-        ///</summary>
-        [TestMethod()]
-        public void NonEmptySize()
-        {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            Assert.AreEqual(2, t.Size);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "b");
+            Assert.AreEqual(1, graph.Size);
         }
 
         /// <summary>
-        ///Slight variant
-        ///</summary>
-        [TestMethod()]
-        public void AddDuplicate()
+        /// Tests that HasDependees reports correctly for any given node.
+        /// </summary>
+        [TestMethod]
+        public void TestHasDependees()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "b");
-            Assert.AreEqual(1, t.Size);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            Assert.IsFalse(graph.HasDependees("a"));
+            Assert.IsTrue(graph.HasDependees("b"));
+            Assert.IsTrue(graph.HasDependees("c"));
+            Assert.IsFalse(graph.HasDependees("d"));
         }
-
+        
         /// <summary>
-        ///Nonempty graph should contain something
-        ///</summary>
-        [TestMethod()]
-        public void NonEmptyTest3()
+        /// Tests that HasDependents reports correctly for any given node.
+        /// </summary>
+        [TestMethod]
+        public void TestHasDependents()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            Assert.IsFalse(t.HasDependees("a"));
-            Assert.IsTrue(t.HasDependees("b"));
-            Assert.IsTrue(t.HasDependents("a"));
-            Assert.IsTrue(t.HasDependees("c"));
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            Assert.IsTrue(graph.HasDependents("a"));
+            Assert.IsFalse(graph.HasDependents("b"));
+            Assert.IsFalse(graph.HasDependents("c"));
+            Assert.IsTrue(graph.HasDependents("d"));
         }
 
         /// <summary>
         ///Nonempty graph should contain something
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void ComplexGraphCount()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            HashSet<String> aDents = new HashSet<String>(t.GetDependents("a"));
-            HashSet<String> bDents = new HashSet<String>(t.GetDependents("b"));
-            HashSet<String> cDents = new HashSet<String>(t.GetDependents("c"));
-            HashSet<String> dDents = new HashSet<String>(t.GetDependents("d"));
-            HashSet<String> eDents = new HashSet<String>(t.GetDependents("e"));
-            HashSet<String> aDees = new HashSet<String>(t.GetDependees("a"));
-            HashSet<String> bDees = new HashSet<String>(t.GetDependees("b"));
-            HashSet<String> cDees = new HashSet<String>(t.GetDependees("c"));
-            HashSet<String> dDees = new HashSet<String>(t.GetDependees("d"));
-            HashSet<String> eDees = new HashSet<String>(t.GetDependees("e"));
-            Assert.IsTrue(aDents.Count == 2 && aDents.Contains("b") && aDents.Contains("c"));
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            var aDents = new HashSet<String>(graph.GetDependents("a"));
+            var bDents = new HashSet<String>(graph.GetDependents("b"));
+            var cDents = new HashSet<String>(graph.GetDependents("c"));
+            var dDents = new HashSet<String>(graph.GetDependents("d"));
+            var eDents = new HashSet<String>(graph.GetDependents("e"));
+            var aDees = new HashSet<String>(graph.GetDependees("a"));
+            var bDees = new HashSet<String>(graph.GetDependees("b"));
+            var cDees = new HashSet<String>(graph.GetDependees("c"));
+            var dDees = new HashSet<String>(graph.GetDependees("d"));
+            var eDees = new HashSet<String>(graph.GetDependees("e"));
+            Assert.IsTrue(aDents.Count == 2 & aDents.Contains("b") & aDents.Contains("c"));
             Assert.IsTrue(bDents.Count == 0);
             Assert.IsTrue(cDents.Count == 0);
             Assert.IsTrue(dDents.Count == 1 && dDents.Contains("c"));
@@ -196,69 +185,83 @@ namespace DevelopmentTests
         /// <summary>
         ///Nonempty graph should contain something
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void ComplexGraphIndexer()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            Assert.AreEqual(0, t["a"]);
-            Assert.AreEqual(1, t["b"]);
-            Assert.AreEqual(2, t["c"]);
-            Assert.AreEqual(0, t["d"]);
-            Assert.AreEqual(0, t["e"]);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            Assert.AreEqual(0, graph["a"]);
+            Assert.AreEqual(1, graph["b"]);
+            Assert.AreEqual(2, graph["c"]);
+            Assert.AreEqual(0, graph["d"]);
+            Assert.AreEqual(0, graph["e"]);
         }
 
         /// <summary>
         ///Removing from a DG 
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void Remove()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            t.RemoveDependency("a", "b");
-            Assert.AreEqual(2, t.Size);
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            graph.RemoveDependency("a", "b");
+            Assert.AreEqual(2, graph.Size);
         }
 
         /// <summary>
         ///Replace on a DG
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void ReplaceDependents()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            t.ReplaceDependents("a", new HashSet<string>() { "x", "y", "z" });
-            HashSet<String> aPends = new HashSet<string>(t.GetDependents("a"));
-            Assert.IsTrue(aPends.SetEquals(new HashSet<string>() { "x", "y", "z" }));
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            graph.ReplaceDependents("a", new HashSet<string> {"x", "y", "z"});
+            var aPends = new HashSet<string>(graph.GetDependents("a"));
+            Assert.IsTrue(aPends.SetEquals(new HashSet<string> {"x", "y", "z"}));
         }
 
         /// <summary>
         ///Replace on a DG
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void ReplaceDependees()
         {
-            DependencyGraph t = new DependencyGraph();
-            t.AddDependency("a", "b");
-            t.AddDependency("a", "c");
-            t.AddDependency("d", "c");
-            t.ReplaceDependees("c", new HashSet<string>() { "x", "y", "z" });
-            HashSet<String> cDees = new HashSet<string>(t.GetDependees("c"));
-            Assert.IsTrue(cDees.SetEquals(new HashSet<string>() { "x", "y", "z" }));
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("d", "c");
+            graph.ReplaceDependees("c", new HashSet<string> {"x", "y", "z"});
+            var cDees = new HashSet<string>(graph.GetDependees("c"));
+            Assert.IsTrue(cDees.SetEquals(new HashSet<string> {"x", "y", "z"}));
+        }
+
+        /// <summary>
+        /// Tests replacing dependees for a node which does not already exist in the graph.
+        /// </summary>
+        [TestMethod]
+        public void TestEmptyReplaceDependees()
+        {
+            DependencyGraph dg = new DependencyGraph();
+
+            dg.ReplaceDependees("b", new HashSet<string> {"a"});
+
+            Assert.AreEqual(1, dg.Size);
+            Assert.IsTrue(new HashSet<string> {"b"}.SetEquals(dg.GetDependents("a")));
         }
 
         // ************************** STRESS TESTS ******************************** //
         /// <summary>
         ///Using lots of data
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void StressTest1()
         {
             // Dependency graph
@@ -269,7 +272,7 @@ namespace DevelopmentTests
             string[] letters = new string[SIZE];
             for (int i = 0; i < SIZE; i++)
             {
-                letters[i] = ("" + (char)('a' + i));
+                letters[i] = ("" + (char) ('a' + i));
             }
 
             // The correct answers
@@ -312,12 +315,11 @@ namespace DevelopmentTests
         }
 
 
-
         // ********************************** ANOTHER STESS TEST ******************** //
         /// <summary>
         ///Using lots of data with replacement
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void StressTest8()
         {
             // Dependency graph
@@ -328,7 +330,7 @@ namespace DevelopmentTests
             string[] letters = new string[SIZE];
             for (int i = 0; i < SIZE; i++)
             {
-                letters[i] = ("" + (char)('a' + i));
+                letters[i] = ("" + (char) ('a' + i));
             }
 
             // The correct answers
@@ -397,7 +399,7 @@ namespace DevelopmentTests
         /// <summary>
         ///Using lots of data with replacement
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void StressTest15()
         {
             // Dependency graph
@@ -408,7 +410,7 @@ namespace DevelopmentTests
             string[] letters = new string[SIZE];
             for (int i = 0; i < SIZE; i++)
             {
-                letters[i] = ("" + (char)('a' + i));
+                letters[i] = ("" + (char) ('a' + i));
             }
 
             // The correct answers

@@ -1,32 +1,20 @@
-﻿// Skeleton implementation written by Joe Zachary for CS 3500, September 2013.
-// Version 1.1 (Fixed error in comment for RemoveDependency.)
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace SpreadsheetUtilities
 {
-
     /// <summary>
-    /// (s1,t1) is an ordered pair of strings
-    /// t1 depends on s1; s1 must be evaluated before t1
+    /// This DependencyGraph links string nodes together to form a dependency relationship consisting of dependees and dependents.
+    /// <list type="bullet">
+    ///     <item>
+    ///     Asking for a node's set of dependents is asking: "who depends on me?", or "what must be calculated after this node?"
+    ///     </item>
+    ///     <item>
+    ///     Asking for a node's set of dependees is asking: "who do I depend upon?", or "what must be calculated before this node?"
+    ///     </item>
+    /// </list>
     /// 
-    /// A DependencyGraph can be modeled as a set of ordered pairs of strings.  Two ordered pairs
-    /// (s1,t1) and (s2,t2) are considered equal if and only if s1 equals s2 and t1 equals t2.
-    /// Recall that sets never contain duplicates.  If an attempt is made to add an element to a 
-    /// set, and the element is already in the set, the set remains unchanged.
-    /// 
-    /// Given a DependencyGraph DG:
-    /// 
-    ///    (1) If s is a string, the set of all strings t such that (s,t) is in DG is called dependents(s).
-    ///        (The set of things that depend on s)    
-    ///        
-    ///    (2) If s is a string, the set of all strings t such that (t,s) is in DG is called dependees(s).
-    ///        (The set of things that s depends on) 
-    ///
-    /// For example, suppose DG = {("a", "b"), ("a", "c"), ("b", "d"), ("d", "d")}
+    /// <code>
+    ///  For example, suppose DG = {("a", "b"), ("a", "c"), ("b", "d"), ("d", "d")}
     ///     dependents("a") = {"b", "c"}
     ///     dependents("b") = {"d"}
     ///     dependents("c") = {}
@@ -35,11 +23,12 @@ namespace SpreadsheetUtilities
     ///     dependees("b") = {"a"}
     ///     dependees("c") = {"a"}
     ///     dependees("d") = {"b", "d"}
-    /// </summary>
+    /// </code>
+    /// 
+    ///  </summary>
     /// <author>Mitch Talmadge, u1031378</author>
     public class DependencyGraph
     {
-
         /// <summary>
         /// Contains the ordered pairs for the dependency graph.
         /// </summary>
@@ -116,7 +105,7 @@ namespace SpreadsheetUtilities
         /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>       
         public void AddDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.AddPair(dependentNode, dependeeNode);
+            _dependencies.AddPair(dependeeNode, dependentNode);
         }
 
 
@@ -127,7 +116,7 @@ namespace SpreadsheetUtilities
         /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>   
         public void RemoveDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.RemovePair(dependentNode, dependeeNode);
+            _dependencies.RemovePair(dependeeNode, dependentNode);
         }
 
 
@@ -140,7 +129,7 @@ namespace SpreadsheetUtilities
         {
             _dependencies.RemoveDependents(node);
             foreach (var dependent in newDependents)
-                _dependencies.AddPair(dependent, node);
+                _dependencies.AddPair(node, dependent);
         }
 
 
@@ -153,9 +142,7 @@ namespace SpreadsheetUtilities
         {
             _dependencies.RemoveDependees(node);
             foreach (var dependee in newDependees)
-                _dependencies.AddPair(node, dependee);
+                _dependencies.AddPair(dependee, node);
         }
-
     }
-
 }

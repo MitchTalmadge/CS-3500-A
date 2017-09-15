@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SpreadsheetUtilities\SpreadsheetUtilities.csproj">
-      <Project>{03cffbdb-3bca-4e5b-bb3f-7c197aa351bf}</Project>
+      <Project>{e0e4ccd1-0bad-479a-962f-6d2b010b53a1}</Project>
       <Name>SpreadsheetUtilities</Name>
     </ProjectReference>
   </ItemGroup>
