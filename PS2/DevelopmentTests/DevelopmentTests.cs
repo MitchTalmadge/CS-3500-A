@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 
@@ -133,7 +134,7 @@ namespace DevelopmentTests
             Assert.IsTrue(graph.HasDependees("c"));
             Assert.IsFalse(graph.HasDependees("d"));
         }
-        
+
         /// <summary>
         /// Tests that HasDependents reports correctly for any given node.
         /// </summary>
@@ -151,25 +152,26 @@ namespace DevelopmentTests
         }
 
         /// <summary>
-        ///Nonempty graph should contain something
-        ///</summary>
+        /// Performs a comprehensive test of the ability to add and retrieve dependencies,
+        /// as well as checking their counts and existence.
+        /// </summary>
         [TestMethod]
-        public void ComplexGraphCount()
+        public void TestComprehensiveDependencyRetrieval()
         {
             var graph = new DependencyGraph();
             graph.AddDependency("a", "b");
             graph.AddDependency("a", "c");
             graph.AddDependency("d", "c");
-            var aDents = new HashSet<String>(graph.GetDependents("a"));
-            var bDents = new HashSet<String>(graph.GetDependents("b"));
-            var cDents = new HashSet<String>(graph.GetDependents("c"));
-            var dDents = new HashSet<String>(graph.GetDependents("d"));
-            var eDents = new HashSet<String>(graph.GetDependents("e"));
-            var aDees = new HashSet<String>(graph.GetDependees("a"));
-            var bDees = new HashSet<String>(graph.GetDependees("b"));
-            var cDees = new HashSet<String>(graph.GetDependees("c"));
-            var dDees = new HashSet<String>(graph.GetDependees("d"));
-            var eDees = new HashSet<String>(graph.GetDependees("e"));
+            var aDents = new HashSet<string>(graph.GetDependents("a"));
+            var bDents = new HashSet<string>(graph.GetDependents("b"));
+            var cDents = new HashSet<string>(graph.GetDependents("c"));
+            var dDents = new HashSet<string>(graph.GetDependents("d"));
+            var eDents = new HashSet<string>(graph.GetDependents("e"));
+            var aDees = new HashSet<string>(graph.GetDependees("a"));
+            var bDees = new HashSet<string>(graph.GetDependees("b"));
+            var cDees = new HashSet<string>(graph.GetDependees("c"));
+            var dDees = new HashSet<string>(graph.GetDependees("d"));
+            var eDees = new HashSet<string>(graph.GetDependees("e"));
             Assert.IsTrue(aDents.Count == 2 & aDents.Contains("b") & aDents.Contains("c"));
             Assert.IsTrue(bDents.Count == 0);
             Assert.IsTrue(cDents.Count == 0);
@@ -183,10 +185,10 @@ namespace DevelopmentTests
         }
 
         /// <summary>
-        ///Nonempty graph should contain something
-        ///</summary>
+        /// Tests the correctness of the indexer when retrieving the count of dependees for a node.
+        /// </summary>
         [TestMethod]
-        public void ComplexGraphIndexer()
+        public void TestIndexerHasCorrectCounts()
         {
             var graph = new DependencyGraph();
             graph.AddDependency("a", "b");
@@ -200,10 +202,10 @@ namespace DevelopmentTests
         }
 
         /// <summary>
-        ///Removing from a DG 
-        ///</summary>
+        /// Tests removal of an existing dependency.
+        /// </summary>
         [TestMethod]
-        public void Remove()
+        public void TestRemoveExistingDependency()
         {
             var graph = new DependencyGraph();
             graph.AddDependency("a", "b");
@@ -214,8 +216,19 @@ namespace DevelopmentTests
         }
 
         /// <summary>
-        ///Replace on a DG
-        ///</summary>
+        /// Tests removal of a missing dependency.
+        /// </summary>
+        [TestMethod]
+        public void TestRemoveMissingDependency()
+        {
+            var graph = new DependencyGraph();
+            graph.RemoveDependency("a", "b");
+            Assert.AreEqual(0, graph.Size);
+        }
+
+        /// <summary>
+        /// Tests replacement of dependents for a node.
+        /// </summary>
         [TestMethod]
         public void ReplaceDependents()
         {
@@ -223,14 +236,28 @@ namespace DevelopmentTests
             graph.AddDependency("a", "b");
             graph.AddDependency("a", "c");
             graph.AddDependency("d", "c");
-            graph.ReplaceDependents("a", new HashSet<string> {"x", "y", "z"});
-            var aPends = new HashSet<string>(graph.GetDependents("a"));
-            Assert.IsTrue(aPends.SetEquals(new HashSet<string> {"x", "y", "z"}));
+            graph.ReplaceDependents("a", new HashSet<string> { "x", "y", "z" });
+            var dependents = new HashSet<string>(graph.GetDependents("a"));
+            Assert.IsTrue(dependents.SetEquals(new HashSet<string> { "x", "y", "z" }));
         }
 
         /// <summary>
-        ///Replace on a DG
-        ///</summary>
+        /// Tests replacing dependents for a node which does not already exist in the graph.
+        /// </summary>
+        [TestMethod]
+        public void TestEmptyReplaceDependents()
+        {
+            var graph = new DependencyGraph();
+
+            graph.ReplaceDependents("b", new HashSet<string> { "a" });
+
+            Assert.AreEqual(1, graph.Size);
+            Assert.IsTrue(new HashSet<string> { "a" }.SetEquals(graph.GetDependents("b")));
+        }
+
+        /// <summary>
+        /// Tests replacement of dependees for a node.
+        /// </summary>
         [TestMethod]
         public void ReplaceDependees()
         {
@@ -238,9 +265,9 @@ namespace DevelopmentTests
             graph.AddDependency("a", "b");
             graph.AddDependency("a", "c");
             graph.AddDependency("d", "c");
-            graph.ReplaceDependees("c", new HashSet<string> {"x", "y", "z"});
-            var cDees = new HashSet<string>(graph.GetDependees("c"));
-            Assert.IsTrue(cDees.SetEquals(new HashSet<string> {"x", "y", "z"}));
+            graph.ReplaceDependees("c", new HashSet<string> { "x", "y", "z" });
+            var dependees = new HashSet<string>(graph.GetDependees("c"));
+            Assert.IsTrue(dependees.SetEquals(new HashSet<string> { "x", "y", "z" }));
         }
 
         /// <summary>
@@ -249,12 +276,52 @@ namespace DevelopmentTests
         [TestMethod]
         public void TestEmptyReplaceDependees()
         {
-            DependencyGraph dg = new DependencyGraph();
+            var graph = new DependencyGraph();
 
-            dg.ReplaceDependees("b", new HashSet<string> {"a"});
+            graph.ReplaceDependees("b", new HashSet<string> { "a" });
 
-            Assert.AreEqual(1, dg.Size);
-            Assert.IsTrue(new HashSet<string> {"b"}.SetEquals(dg.GetDependents("a")));
+            Assert.AreEqual(1, graph.Size);
+            Assert.IsTrue(new HashSet<string> { "b" }.SetEquals(graph.GetDependents("a")));
+        }
+
+        /// <summary>
+        /// Tests that circular references are added successfully.
+        /// </summary>
+        [TestMethod]
+        public void TestAddCircularReference()
+        {
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "a");
+
+            Assert.AreEqual(1, graph.Size);
+            Assert.IsTrue(graph.GetDependees("a").Contains("a"));
+        }
+
+        /// <summary>
+        /// Tests that circular references can be removed.
+        /// </summary>
+        [TestMethod]
+        public void TestRemoveCircularReference()
+        {
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "a");
+            graph.RemoveDependency("a", "a");
+
+            Assert.AreEqual(0, graph.Size);
+        }
+
+        /// <summary>
+        /// Tests that circular references can be replaced.
+        /// </summary>
+        [TestMethod]
+        public void TestReplaceCircularReference()
+        {
+            var graph = new DependencyGraph();
+            graph.AddDependency("a", "a");
+            graph.ReplaceDependents("a", new[] { "b" });
+
+            Assert.AreEqual(1, graph.Size);
+            Assert.IsTrue(graph.GetDependents("a").Contains("b"));
         }
 
         // ************************** STRESS TESTS ******************************** //
@@ -265,52 +332,52 @@ namespace DevelopmentTests
         public void StressTest1()
         {
             // Dependency graph
-            DependencyGraph t = new DependencyGraph();
+            var graph = new DependencyGraph();
 
             // A bunch of strings to use
-            const int SIZE = 100;
-            string[] letters = new string[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            const int size = 100;
+            var letters = new string[size];
+            for (var i = 0; i < size; i++)
             {
-                letters[i] = ("" + (char) ('a' + i));
+                letters[i] = ("" + (char)('a' + i));
             }
 
             // The correct answers
-            HashSet<string>[] dents = new HashSet<string>[SIZE];
-            HashSet<string>[] dees = new HashSet<string>[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            var dents = new HashSet<string>[size];
+            var dees = new HashSet<string>[size];
+            for (var i = 0; i < size; i++)
             {
                 dents[i] = new HashSet<string>();
                 dees[i] = new HashSet<string>();
             }
 
             // Add a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 1; j < SIZE; j++)
+                for (var j = i + 1; j < size; j++)
                 {
-                    t.AddDependency(letters[i], letters[j]);
+                    graph.AddDependency(letters[i], letters[j]);
                     dents[i].Add(letters[j]);
                     dees[j].Add(letters[i]);
                 }
             }
 
             // Remove a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 2; j < SIZE; j += 2)
+                for (var j = i + 2; j < size; j += 2)
                 {
-                    t.RemoveDependency(letters[i], letters[j]);
+                    graph.RemoveDependency(letters[i], letters[j]);
                     dents[i].Remove(letters[j]);
                     dees[j].Remove(letters[i]);
                 }
             }
 
             // Make sure everything is right
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(t.GetDependents(letters[i]))));
-                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(t.GetDependees(letters[i]))));
+                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(graph.GetDependents(letters[i]))));
+                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(graph.GetDependees(letters[i]))));
             }
         }
 
@@ -323,63 +390,63 @@ namespace DevelopmentTests
         public void StressTest8()
         {
             // Dependency graph
-            DependencyGraph t = new DependencyGraph();
+            var graph = new DependencyGraph();
 
             // A bunch of strings to use
-            const int SIZE = 100;
-            string[] letters = new string[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            const int size = 100;
+            var letters = new string[size];
+            for (var i = 0; i < size; i++)
             {
-                letters[i] = ("" + (char) ('a' + i));
+                letters[i] = ("" + (char)('a' + i));
             }
 
             // The correct answers
-            HashSet<string>[] dents = new HashSet<string>[SIZE];
-            HashSet<string>[] dees = new HashSet<string>[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            var dents = new HashSet<string>[size];
+            var dees = new HashSet<string>[size];
+            for (var i = 0; i < size; i++)
             {
                 dents[i] = new HashSet<string>();
                 dees[i] = new HashSet<string>();
             }
 
             // Add a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 1; j < SIZE; j++)
+                for (var j = i + 1; j < size; j++)
                 {
-                    t.AddDependency(letters[i], letters[j]);
+                    graph.AddDependency(letters[i], letters[j]);
                     dents[i].Add(letters[j]);
                     dees[j].Add(letters[i]);
                 }
             }
 
             // Remove a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 2; j < SIZE; j += 2)
+                for (var j = i + 2; j < size; j += 2)
                 {
-                    t.RemoveDependency(letters[i], letters[j]);
+                    graph.RemoveDependency(letters[i], letters[j]);
                     dents[i].Remove(letters[j]);
                     dees[j].Remove(letters[i]);
                 }
             }
 
             // Replace a bunch of dependents
-            for (int i = 0; i < SIZE; i += 4)
+            for (var i = 0; i < size; i += 4)
             {
-                HashSet<string> newDents = new HashSet<String>();
-                for (int j = 0; j < SIZE; j += 7)
+                var newDents = new HashSet<string>();
+                for (var j = 0; j < size; j += 7)
                 {
                     newDents.Add(letters[j]);
                 }
-                t.ReplaceDependents(letters[i], newDents);
+                graph.ReplaceDependents(letters[i], newDents);
 
-                foreach (string s in dents[i])
+                foreach (var s in dents[i])
                 {
                     dees[s[0] - 'a'].Remove(letters[i]);
                 }
 
-                foreach (string s in newDents)
+                foreach (var s in newDents)
                 {
                     dees[s[0] - 'a'].Add(letters[i]);
                 }
@@ -388,10 +455,10 @@ namespace DevelopmentTests
             }
 
             // Make sure everything is right
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(t.GetDependents(letters[i]))));
-                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(t.GetDependees(letters[i]))));
+                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(graph.GetDependents(letters[i]))));
+                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(graph.GetDependees(letters[i]))));
             }
         }
 
@@ -403,63 +470,63 @@ namespace DevelopmentTests
         public void StressTest15()
         {
             // Dependency graph
-            DependencyGraph t = new DependencyGraph();
+            var graph = new DependencyGraph();
 
             // A bunch of strings to use
-            const int SIZE = 100;
-            string[] letters = new string[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            const int size = 100;
+            var letters = new string[size];
+            for (var i = 0; i < size; i++)
             {
-                letters[i] = ("" + (char) ('a' + i));
+                letters[i] = ("" + (char)('a' + i));
             }
 
             // The correct answers
-            HashSet<string>[] dents = new HashSet<string>[SIZE];
-            HashSet<string>[] dees = new HashSet<string>[SIZE];
-            for (int i = 0; i < SIZE; i++)
+            var dents = new HashSet<string>[size];
+            var dees = new HashSet<string>[size];
+            for (var i = 0; i < size; i++)
             {
                 dents[i] = new HashSet<string>();
                 dees[i] = new HashSet<string>();
             }
 
             // Add a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 1; j < SIZE; j++)
+                for (var j = i + 1; j < size; j++)
                 {
-                    t.AddDependency(letters[i], letters[j]);
+                    graph.AddDependency(letters[i], letters[j]);
                     dents[i].Add(letters[j]);
                     dees[j].Add(letters[i]);
                 }
             }
 
             // Remove a bunch of dependencies
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                for (int j = i + 2; j < SIZE; j += 2)
+                for (var j = i + 2; j < size; j += 2)
                 {
-                    t.RemoveDependency(letters[i], letters[j]);
+                    graph.RemoveDependency(letters[i], letters[j]);
                     dents[i].Remove(letters[j]);
                     dees[j].Remove(letters[i]);
                 }
             }
 
             // Replace a bunch of dependees
-            for (int i = 0; i < SIZE; i += 4)
+            for (var i = 0; i < size; i += 4)
             {
-                HashSet<string> newDees = new HashSet<String>();
-                for (int j = 0; j < SIZE; j += 7)
+                var newDees = new HashSet<string>();
+                for (var j = 0; j < size; j += 7)
                 {
                     newDees.Add(letters[j]);
                 }
-                t.ReplaceDependees(letters[i], newDees);
+                graph.ReplaceDependees(letters[i], newDees);
 
-                foreach (string s in dees[i])
+                foreach (var s in dees[i])
                 {
                     dents[s[0] - 'a'].Remove(letters[i]);
                 }
 
-                foreach (string s in newDees)
+                foreach (var s in newDees)
                 {
                     dents[s[0] - 'a'].Add(letters[i]);
                 }
@@ -468,10 +535,10 @@ namespace DevelopmentTests
             }
 
             // Make sure everything is right
-            for (int i = 0; i < SIZE; i++)
+            for (var i = 0; i < size; i++)
             {
-                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(t.GetDependents(letters[i]))));
-                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(t.GetDependees(letters[i]))));
+                Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(graph.GetDependents(letters[i]))));
+                Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(graph.GetDependees(letters[i]))));
             }
         }
     }
