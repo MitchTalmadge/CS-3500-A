@@ -47,13 +47,11 @@ namespace SpreadsheetUtilities
         public int Size => _dependencies.Count;
 
         /// <summary>
-        /// The size of dependees(s).
-        /// This property is an example of an indexer.  If dg is a DependencyGraph, you would
-        /// invoke it like this:
-        /// dg["a"]
-        /// It should return the size of dependees("a")
+        /// Obtains the number of dependees for the given node.
         /// </summary>
-        public int this[string s] => _dependencies.GetDependeesCount(s);
+        /// <param name="node">The node.</param>
+        /// <returns>The number of dependees belonging to the given node.</returns>
+        public int this[string node] => _dependencies.GetDependeesCount(node);
 
 
         /// <summary>

@@ -324,7 +324,6 @@ namespace DevelopmentTests
             Assert.IsTrue(graph.GetDependents("a").Contains("b"));
         }
 
-        // ************************** STRESS TESTS ******************************** //
         /// <summary>
         ///Using lots of data
         ///</summary>
@@ -381,8 +380,6 @@ namespace DevelopmentTests
             }
         }
 
-
-        // ********************************** ANOTHER STESS TEST ******************** //
         /// <summary>
         ///Using lots of data with replacement
         ///</summary>
@@ -462,7 +459,6 @@ namespace DevelopmentTests
             }
         }
 
-        // ********************************** A THIRD STESS TEST ******************** //
         /// <summary>
         ///Using lots of data with replacement
         ///</summary>
