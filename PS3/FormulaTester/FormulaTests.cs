@@ -13,7 +13,7 @@ namespace FormulaTester
         [TestMethod]
         public void PublicTestSyntaxAtLeastOneToken()
         {
-            Assert.ThrowsException<ArgumentException>(() => new Formula(""));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula(""));
         }
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace FormulaTester
             Assert.IsNotNull(new Formula("((10 + 5))"));
 
             // Should throw
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(10 + 5))"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("((10 + 5)))"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("((10 + 5) + (5 + (5 * 10)) 10))"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(10 + 5))"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("((10 + 5)))"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("((10 + 5) + (5 + (5 * 10)) 10))"));
         }
 
         /// <summary>
@@ -44,10 +44,10 @@ namespace FormulaTester
             Assert.IsNotNull(new Formula("((10 - 5))"));
 
             // Should Throw
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(10 + 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("((10 / 5)"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(((10 - 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(((10 + 5) * (5 + (5 * 10)) 10)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(10 + 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("((10 / 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(((10 - 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(((10 + 5) * (5 + (5 * 10)) 10)"));
         }
 
         /// <summary>
@@ -62,11 +62,11 @@ namespace FormulaTester
             Assert.IsNotNull(new Formula("A5 * 5")); // Start with variable
 
             // Should Throw
-            Assert.ThrowsException<ArgumentException>(() => new Formula(")10 + 5("));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("_ 10 / 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("+ 5 * 10"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("!10 - 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("+(10 + 5) * 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula(")10 + 5("));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("_ 10 / 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("+ 5 * 10"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("!10 - 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("+(10 + 5) * 5"));
         }
 
         /// <summary>
@@ -81,11 +81,11 @@ namespace FormulaTester
             Assert.IsNotNull(new Formula("5 * A5")); // End with variable.
 
             // Should Throw
-            Assert.ThrowsException<ArgumentException>(() => new Formula(")10 - 5("));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 + 5 _"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("5 / 10 + "));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 - !5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("5 * (10 + 5)+"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula(")10 - 5("));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + 5 _"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("5 / 10 + "));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 - !5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("5 * (10 + 5)+"));
         }
 
         /// <summary>
@@ -108,15 +108,15 @@ namespace FormulaTester
 
             // Should Throw
             // Parenthesis
-            Assert.ThrowsException<ArgumentException>(() => new Formula("()"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(_ + 5)"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(+ 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("()"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(_ + 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(+ 5)"));
 
             // Operator
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 + /"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 - *5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(10 * )"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 / )"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + /"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 - *5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(10 * )"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 / )"));
         }
 
         /// <summary>
@@ -148,18 +148,18 @@ namespace FormulaTester
 
             // Should Throw
             // Number
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 _ 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 = 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("10 ... 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 = 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 ... 5"));
             // Variable
-            Assert.ThrowsException<ArgumentException>(() => new Formula("A5 _ 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("A5 = 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("A5 ... 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 = 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 ... 5"));
             // Closing Parenthesis
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(5 + 5) _ 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(5 + 5) = 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(5 + 5) ... 5"));
-            Assert.ThrowsException<ArgumentException>(() => new Formula("(5 + 5) (5 + 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) = 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) ... 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) (5 + 5)"));
         }
     }
 }
