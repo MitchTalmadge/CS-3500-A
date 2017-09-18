@@ -7,7 +7,7 @@
     <ProjectGuid>{91F3CA05-4EAA-4CC5-A81C-FDD438A24C1E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Formula</RootNamespace>
+    <RootNamespace>SpreadsheetUtilities</RootNamespace>
     <AssemblyName>Formula</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
