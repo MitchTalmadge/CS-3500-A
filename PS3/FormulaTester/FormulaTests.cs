@@ -74,9 +74,9 @@ namespace FormulaTester
 
             // Should Throw
             Assert.ThrowsException<FormulaFormatException>(() => new Formula(")10 + 5("));
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("_ 10 / 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("/ 10 / 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("+ 5 * 10"));
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("!10 - 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("$10 - 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("+(10 + 5) * 5"));
         }
 
@@ -92,10 +92,10 @@ namespace FormulaTester
             Assert.IsNotNull(new Formula("5 * A5")); // End with variable.
 
             // Should Throw
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula(")10 - 5("));
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + 5 _"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(10 - 5("));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + 5 %"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("5 / 10 + "));
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 - !5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 - 5$"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("5 * (10 + 5)+"));
         }
 
@@ -104,7 +104,7 @@ namespace FormulaTester
         /// or an operator must be either a number, a variable, or an opening parenthesis.
         /// </summary>
         [TestMethod]
-        public void PublicTestSyntaxParenthesisFollowing()
+        public void PublicTestSyntaxParenthesisOperatorFollowing()
         {
             // Shouldn't throw
             // Parenthesis
@@ -120,7 +120,7 @@ namespace FormulaTester
             // Should Throw
             // Parenthesis
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("()"));
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(_ + 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(; + 5)"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("(+ 5)"));
 
             // Operator
@@ -159,18 +159,60 @@ namespace FormulaTester
 
             // Should Throw
             // Number
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 AB 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 = 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 ... 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 5"));
             // Variable
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 AB 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 = 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 ... 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A5 5"));
             // Closing Parenthesis
-            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) _ 5"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) ^ 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) = 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) ... 5"));
             Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) (5 + 5)"));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("(5 + 5) 5"));
+        }
+
+        /// <summary>
+        /// Tests the default validation delegate which returns true for variables consisting of any letter or 
+        /// underscore followed by any number of letters, digits, and/or underscores.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestDefaultValidatorDelegate()
+        {
+            // Shouldn't throw
+            Assert.IsNotNull(new Formula("A + 1")); // One letter
+            Assert.IsNotNull(new Formula("a + 1")); // One letter, lowercase
+            Assert.IsNotNull(new Formula("A1 + 1")); // One letter and one number
+            Assert.IsNotNull(new Formula("a1 + 1")); // One letter and one number, lowercase
+            Assert.IsNotNull(new Formula("A1B + 1")); // Letter followed by number and letter.
+            Assert.IsNotNull(new Formula("A1_ + 1")); // Letter followed by number and underscore.
+            Assert.IsNotNull(new Formula("A_ + 1")); // Letter followed by underscore.
+            Assert.IsNotNull(new Formula("_ + 1")); // Underscore only.
+            Assert.IsNotNull(new Formula("____ + 1")); // Multiple Underscores.
+            Assert.IsNotNull(new Formula("_B_D10_A123_ + 1")); // Mixed.
+            Assert.IsNotNull(new Formula("A1234_5678B + 1")); // Mixed.
+            Assert.IsNotNull(new Formula("A_1_B______C2 + 1")); // Mixed.
+
+            // Should throw
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("1A + 5")); // Starts with number
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("AB% + 5")); // Includes invalid characters
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("AB$ + 5")); // Includes invalid characters
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A$B + 5")); // Includes invalid characters
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("A_B&2 + 5")); // Includes invalid characters
+        }
+
+        /// <summary>
+        /// Makes sure an exception is thrown when the formula passed in is null.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestFormulaIsNull()
+        {
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula(null));
         }
     }
+
 }

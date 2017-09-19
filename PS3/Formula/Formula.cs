@@ -81,6 +81,148 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            CheckFormulaSyntax(formula, normalize, isValid);
+        }
+
+        /// <summary>
+        /// Checks that the given formula, along with a normalizer and validator, are syntactically correct.
+        /// Throws a FormulaFormatException if there are any problems.
+        /// </summary>
+        /// <param name="formula">The formula to check.</param>
+        /// <param name="normalize">The normalizer.</param>
+        /// <param name="isValid">The validator.</param>
+        private static void CheckFormulaSyntax(string formula, Func<string, string> normalize,
+            Func<string, bool> isValid)
+        {
+            // Check for null or empty formulas.
+            if (formula == null)
+                throw new FormulaFormatException("The formula is null and cannot be parsed.");
+            if (formula.Trim() == "")
+                throw new FormulaFormatException("The formula is empty and cannot be parsed.");
+
+            // Get an enumerator for all the tokens in the formula.
+            var tokens = GetTokens(formula).GetEnumerator();
+
+            foreach (var t in GetTokens(formula))
+            {
+                
+            }
+
+            // Get the first token out and ensure it is legal.
+            // The first token must be either an opening parenthesis, a number, or a variable.
+            tokens.MoveNext();
+            var token = tokens.Current;
+            if (token != "(" && ToDouble(token) == null && !(IsVariable(token) && isValid(normalize(token))))
+                throw new FormulaFormatException(
+                    "The first token of the formula must be an opening parenthesis, a number, or a variable.");
+
+            // Keep track of number of opening and closing parentheses.
+            int numOpeningParentheses = 0, numClosingParentheses = 0;
+
+            // Keep track of the last token seen
+            string lastToken = null;
+
+            // Iterate over each token in the enumerator.
+            do
+            {
+                token = tokens.Current;
+
+                if (lastToken != null)
+                {
+                    /* Check that any token immediately following an opening parenthesis or operator 
+                     * is either an opening parenthesis, a number, or a variable. */
+                    if (lastToken == "("
+                        || lastToken == "+"
+                        || lastToken == "-"
+                        || lastToken == "/"
+                        || lastToken == "*"
+                    )
+                    {
+                        if (token != "("
+                            && ToDouble(token) == null
+                            && !(IsVariable(token) && isValid(normalize(token)))
+                        )
+                            throw new FormulaFormatException(
+                                "Any tokens following an opening parenthesis or operator must be an opening parenthesis, a number, or a variable.\n" +
+                                $"The token '{token}' is incorrectly following the token '{lastToken}'");
+                    }
+
+                    /* Check that any token immediately following a number, a variable, or a closing parenthesis 
+                     * is either an operator or a closing parenthesis */
+                    if (lastToken == ")"
+                        || ToDouble(lastToken) != null
+                        || IsVariable(lastToken) && isValid(normalize(lastToken))
+                    )
+                    {
+                        if (token != ")"
+                            && token != "+"
+                            && token != "-"
+                            && token != "/"
+                            && token != "*"
+                        )
+                            throw new FormulaFormatException(
+                                "Any tokens following a closing parenthesis, number, or variable must be a closing parenthesis or operator.\n" +
+                                $"The token '{token}' is incorrectly following the token '{lastToken}'");
+                    }
+                }
+
+                // Determine the type of token.
+                switch (token)
+                {
+                    case "(": // Opening Parenthesis
+                        // Increase the counter for opening parentheses.
+                        numOpeningParentheses++;
+                        break;
+                    case ")": // Closing Parenthesis
+                        // Increase the counter for closing parentheses.
+                        numClosingParentheses++;
+                        // Ensure we have not seen more closing parentheses than opening.
+                        if (numClosingParentheses > numOpeningParentheses)
+                            throw new FormulaFormatException("There are too many closing parentheses.");
+                        break;
+                }
+
+                lastToken = token;
+            } while (tokens.MoveNext());
+            // Dispose of tokens enumerator.
+            tokens.Dispose();
+
+            // Check that the last token is legal.
+            // The last token must be a closing parenthesis, a number, or a variable.
+            if (token != ")" && ToDouble(token) == null && !(IsVariable(token) && isValid(normalize(token))))
+                throw new FormulaFormatException(
+                    "The last token of the formula must be a closing parenthesis, a number, or a variable.");
+
+            // Make sure the parentheses are balanced (opening == closed)
+            if (numOpeningParentheses != numClosingParentheses)
+                throw new FormulaFormatException(
+                    "Parentheses are unbalanced; the number of opening parentheses does not match the number of closing parentheses.");
+        }
+
+        /// <summary>
+        /// Checks if a given token is a double, and returns the parsed double if it is.
+        /// </summary>
+        /// <param name="token">The token to check.</param>
+        /// <returns>The parsed double if it is a double, or null if it is not.</returns>
+        private static double? ToDouble(string token)
+        {
+            // Try to parse the token as a double.
+            if (double.TryParse(token, out var parsed))
+                return parsed; 
+
+            // Unable to parse.
+            return null;
+        }
+
+        /// <summary>
+        /// Determines if the given token has the syntax of a variable.
+        /// </summary>
+        /// <param name="token">The token to check.</param>
+        /// <returns>True if the token is a variable, false otherwise.</returns>
+        private static bool IsVariable(string token)
+        {
+            const string pattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+            return Regex.IsMatch(token, pattern);
         }
 
         /// <summary>
@@ -213,7 +355,7 @@ namespace SpreadsheetUtilities
 
             // Overall pattern
             String pattern = String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
-                                            lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
+                lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
 
             // Enumerate matching tokens that don't consist solely of white space.
             foreach (String s in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))
@@ -223,7 +365,6 @@ namespace SpreadsheetUtilities
                     yield return s;
                 }
             }
-
         }
     }
 
