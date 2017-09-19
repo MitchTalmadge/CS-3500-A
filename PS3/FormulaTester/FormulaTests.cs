@@ -8,6 +8,17 @@ namespace FormulaTester
     public class FormulaTests
     {
         /// <summary>
+        /// Tests the syntax rule that floating point numbers are acceptable.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestSyntaxFloatingPointNumbers()
+        {
+            // Shouldn't throw
+            Assert.IsNotNull(new Formula("10.5 + 5"));
+            Assert.IsNotNull(new Formula("11.123456 - 1.23445 * (150.3984 / 1082.43434)"));
+        }
+
+        /// <summary>
         /// Tests the syntax rule that there must be at least one token.
         /// </summary>
         [TestMethod]
