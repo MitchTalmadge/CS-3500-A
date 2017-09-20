@@ -185,6 +185,19 @@ namespace FormulaTester
         }
 
         /// <summary>
+        /// Tests variables which are not considered valid by the validator.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestNonValidatedVariable()
+        {
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + AB", s => s, s => false));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + _cat", s => s, s => false));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + _cat - _dog", s => s, s => false));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + A123", s => s, s => false));
+            Assert.ThrowsException<FormulaFormatException>(() => new Formula("10 + a123", s => s, s => false));
+        }
+
+        /// <summary>
         /// Tests the default validation delegate which returns true for variables consisting of any letter or 
         /// underscore followed by any number of letters, digits, and/or underscores.
         /// </summary>
@@ -215,10 +228,10 @@ namespace FormulaTester
         }
 
         /// <summary>
-        /// Makes sure an exception is thrown when the formula passed in is null.
+        /// Makes sure an exception is thrown when the expression passed in is null.
         /// </summary>
         [TestMethod]
-        public void PublicTestFormulaIsNull()
+        public void PublicTestExpressionIsNull()
         {
             Assert.ThrowsException<FormulaFormatException>(() => new Formula(null));
         }
