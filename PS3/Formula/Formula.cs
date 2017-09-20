@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using SpreadsheetUtilities.Utils;
 
 namespace SpreadsheetUtilities
@@ -284,7 +285,24 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override string ToString()
         {
-            return null;
+            // Holds the result
+            var stringBuilder = new StringBuilder();
+
+            // Iterate over each token in the formula.
+            foreach (var token in ExpressionUtils.GetTokens(Expression))
+            {
+                // Check for operators, which are given extra spacing.
+                if (token == "+" || token == "-" || token == "/" || token == "*")
+                    stringBuilder.Append(' ').Append(token).Append(' ');
+                // Check for variables, which need to be normalized.
+                else if (ExpressionUtils.IsVariable(token))
+                    stringBuilder.Append(Normalizer(token));
+                // Anything else can just be appended.
+                else
+                    stringBuilder.Append(token);
+            }
+
+            return stringBuilder.ToString();
         }
 
         /// <summary>

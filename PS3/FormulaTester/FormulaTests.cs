@@ -329,6 +329,26 @@ namespace FormulaTester
             CollectionAssert.AreEqual(new[]{"A", "D", "E", "F", "B", "C"}, new Formula("a - d - e - f / b * c", s => s.ToUpper(), s => true).GetVariables().ToList());
             CollectionAssert.AreEqual(new[]{"A10", "B6", "A4"}, new Formula("A10 + 15 - (10 * B6) / a4 - a10", s => s.ToUpper(), s => true).GetVariables().ToList());
         }
+
+        [TestMethod]
+        public void PublicTestToString()
+        {
+            // Default Normalizer
+            Assert.AreEqual("10", new Formula("10").ToString());
+            Assert.AreEqual("(10)", new Formula("(10)").ToString());
+            Assert.AreEqual("10 + 5", new Formula("10+5").ToString());
+            Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5").ToString());
+            Assert.AreEqual("Ab - ac", new Formula("Ab- ac").ToString());
+            Assert.AreEqual("(10 - 5) + 5 - AB * (_6c + c_d)", new Formula("(10-5)+5 - AB *(_6c +c_d)").ToString());
+
+            // Capital Normalizer
+            Assert.AreEqual("10", new Formula("10", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10)", new Formula("(10)", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("10 + 5", new Formula("10+5", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("AB - AC", new Formula("Ab- ac", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10 - 5) + 5 - AB * (_6C + C_D)", new Formula("(10-5)+5 - AB *(_6c +c_d)", s => s.ToUpper(), s => true).ToString());
+        }
     }
 
 }
