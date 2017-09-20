@@ -4,6 +4,11 @@ using SpreadsheetUtilities;
 
 namespace FormulaTester
 {
+
+    /// <summary>
+    /// Tests for the Formula project.
+    /// </summary>
+    /// <author>Mitch Talmadge, u1031378</author>
     [TestClass]
     public class FormulaTests
     {
