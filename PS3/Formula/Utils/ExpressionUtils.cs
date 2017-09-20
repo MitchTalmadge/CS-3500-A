@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SpreadsheetUtilities.Operators;
-using SpreadsheetUtilities.Operators.Arithmetic;
 
 namespace SpreadsheetUtilities.Utils
 {

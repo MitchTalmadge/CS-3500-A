@@ -20,8 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SpreadsheetUtilities.Operators;
-using SpreadsheetUtilities.Operators.Arithmetic;
 using SpreadsheetUtilities.Utils;
 
 namespace SpreadsheetUtilities
