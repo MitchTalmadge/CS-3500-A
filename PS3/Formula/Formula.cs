@@ -402,7 +402,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// Constructs a FormulaError containing the explanatory reason.
         /// </summary>
-        /// <param name="reason"></param>
+        /// <param name="reason">The reason for the error.</param>
         public FormulaError(String reason)
             : this()
         {

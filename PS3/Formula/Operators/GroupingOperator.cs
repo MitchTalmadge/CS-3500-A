@@ -13,11 +13,6 @@
         public bool OpensGroup { get; }
 
         /// <summary>
-        /// Determines if this is the right brace, which closes the group.
-        /// </summary>
-        public bool ClosesGroup => !OpensGroup;
-
-        /// <summary>
         /// Constructs a Grouping Operator.
         /// </summary>
         /// <param name="closeGroup">
