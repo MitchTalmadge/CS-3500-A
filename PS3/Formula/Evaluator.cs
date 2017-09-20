@@ -16,20 +16,6 @@ namespace SpreadsheetUtilities
     internal class Evaluator
     {
         /// <summary>
-        /// Contains a mapping of tokens to Operator instances for use within expression evaluations.
-        /// Useful for adding Operators to the operatorStack when parsing tokens.
-        /// </summary>
-        private static readonly Dictionary<string, Operator> OperatorDict = new Dictionary<string, Operator>
-        {
-            {"(", new GroupingOperator()},
-            {")", new GroupingOperator(true)},
-            {"+", new AdditionArithmeticOperator()},
-            {"-", new SubtractionArithmeticOperator()},
-            {"*", new MultiplicationArithmeticOperator()},
-            {"/", new DivisionArithmeticOperator()}
-        };
-
-        /// <summary>
         /// Evaluates this Formula, using the lookup delegate to determine the values of
         /// variables.  When a variable symbol v needs to be determined, it should be looked up
         /// via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
@@ -67,12 +53,9 @@ namespace SpreadsheetUtilities
                 // Iterate over each token to determine its type and how it should be handled.
                 foreach (var token in tokens)
                 {
-                    // Check if this token is an operator.
-                    if (OperatorDict.ContainsKey(token))
+                    // Try to get the token as an Operator.
+                    if (OperatorUtils.OperatorDict.TryGetValue(token, out var currentOperator))
                     {
-                        // Get the correct Operator from the dictionary by its token.
-                        var currentOperator = OperatorDict[token];
-
                         // Determine the type of Operator.
                         switch (currentOperator)
                         {

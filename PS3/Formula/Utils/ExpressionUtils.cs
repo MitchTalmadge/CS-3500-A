@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using SpreadsheetUtilities.Operators;
+using SpreadsheetUtilities.Operators.Arithmetic;
 
 namespace SpreadsheetUtilities.Utils
 {
     /// <summary>
-    /// Provides useful helper / utility methods for parsing and evaluating expressions.
+    /// Provides helper / utility methods for parsing and evaluating expressions.
     /// </summary>
     /// <author>Mitch Talmadge, u1031378</author>
     internal static class ExpressionUtils

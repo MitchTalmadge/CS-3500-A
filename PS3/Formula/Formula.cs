@@ -20,6 +20,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using SpreadsheetUtilities.Operators;
+using SpreadsheetUtilities.Operators.Arithmetic;
 using SpreadsheetUtilities.Utils;
 
 namespace SpreadsheetUtilities
@@ -124,8 +126,9 @@ namespace SpreadsheetUtilities
             // The first token must be either an opening parenthesis, a number, or a variable.
             tokens.MoveNext();
             var token = tokens.Current;
-            if (token != "(" && !double.TryParse(token, out _) &&
-                !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
+            if (!OperatorUtils.IsOpeningGroupOperator(token)
+                && !double.TryParse(token, out _)
+                && !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
                     "The first token of the expression must be an opening parenthesis, a number, or a variable.");
 
@@ -144,13 +147,10 @@ namespace SpreadsheetUtilities
                 {
                     /* Check that any token immediately following an opening parenthesis or operator 
                      * is either an opening parenthesis, a number, or a variable. */
-                    if (lastToken == "("
-                        || lastToken == "+"
-                        || lastToken == "-"
-                        || lastToken == "/"
-                        || lastToken == "*")
+                    if (OperatorUtils.IsOpeningGroupOperator(lastToken)
+                        || OperatorUtils.IsArithmeticOperator(lastToken))
                     {
-                        if (token != "("
+                        if (!OperatorUtils.IsOpeningGroupOperator(token)
                             && !double.TryParse(token, out _)
                             && !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                             throw new FormulaFormatException(
@@ -160,35 +160,33 @@ namespace SpreadsheetUtilities
 
                     /* Check that any token immediately following a number, a variable, or a closing parenthesis 
                      * is either an operator or a closing parenthesis */
-                    if (lastToken == ")"
+                    if (OperatorUtils.IsClosingGroupOperator(lastToken)
                         || double.TryParse(lastToken, out _)
                         || ExpressionUtils.IsVariable(lastToken) && Validator(Normalizer(lastToken)))
                     {
-                        if (token != ")"
-                            && token != "+"
-                            && token != "-"
-                            && token != "/"
-                            && token != "*")
+                        if (!OperatorUtils.IsClosingGroupOperator(token)
+                            && !OperatorUtils.IsArithmeticOperator(token))
                             throw new FormulaFormatException(
                                 "Any tokens following a closing parenthesis, number, or variable must be a closing parenthesis or operator.\n" +
                                 $"The token '{token}' is incorrectly following the token '{lastToken}'");
                     }
                 }
 
-                // Determine the type of token.
-                switch (token)
+                // Check parentheses.
+                if (OperatorUtils.IsOpeningGroupOperator(token))
                 {
-                    case "(": // Opening Parenthesis
-                        // Increase the counter for opening parentheses.
-                        numOpeningParentheses++;
-                        break;
-                    case ")": // Closing Parenthesis
-                        // Increase the counter for closing parentheses.
-                        numClosingParentheses++;
-                        // Ensure we have not seen more closing parentheses than opening.
-                        if (numClosingParentheses > numOpeningParentheses)
-                            throw new FormulaFormatException("There are too many closing parentheses in the expression.");
-                        break;
+                    // Increase the counter for opening parentheses.
+                    numOpeningParentheses++;
+                }
+                else if (OperatorUtils.IsClosingGroupOperator(token))
+                {
+                    // Increase the counter for closing parentheses.
+                    numClosingParentheses++;
+
+                    // Ensure we have not seen more closing parentheses than opening.
+                    if (numClosingParentheses > numOpeningParentheses)
+                        throw new FormulaFormatException(
+                            "There are too many closing parentheses in the expression.");
                 }
 
                 lastToken = token;
@@ -198,8 +196,9 @@ namespace SpreadsheetUtilities
 
             // Check that the last token is legal.
             // The last token must be a closing parenthesis, a number, or a variable.
-            if (token != ")" && !double.TryParse(token, out _) &&
-                !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
+            if (!OperatorUtils.IsClosingGroupOperator(token)
+                && !double.TryParse(token, out _)
+                && !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
                     "The last token of the expression must be a closing parenthesis, a number, or a variable.");
 
