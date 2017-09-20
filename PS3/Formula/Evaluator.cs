@@ -10,7 +10,7 @@ using SpreadsheetUtilities.Utils;
 namespace SpreadsheetUtilities
 {
     /// <summary>
-    /// Used for evaluation of formulas parsed by the Formula class.
+    /// Used for evaluation of expressions parsed by the Formula class.
     /// </summary>
     /// <author>Mitch Talmadge, u1031378</author>
     internal class Evaluator
@@ -50,11 +50,10 @@ namespace SpreadsheetUtilities
         ///
         /// This method should never throw an exception.
         /// </summary>
-        public static object Evaluate(string formula, Func<string, string> normalize,
-            Func<string, bool> isValid, Func<string, double> lookup)
+        public static object Evaluate(string expression, Func<string, string> normalizer, Func<string, double> lookup)
         {
             // Split the expression up into individual tokens.
-            var tokens = FormulaUtils.GetTokens(formula);
+            var tokens = ExpressionUtils.GetTokens(expression);
 
             // The value stack contains the actual integer values to perform operations on.
             var valueStack = new Stack<double>();
@@ -62,80 +61,76 @@ namespace SpreadsheetUtilities
             // The operator stack contains the Operators that will be applied to the values in the value stack: +, -, /, *, etc.
             var operatorStack = new Stack<Operator>();
 
-            // Iterate over each token to determine its type and how it should be handled.
-            foreach (var token in tokens)
+            // A large try-catch is used to catch the EvaluationExceptions thrown by helper methods, which contain the FormulaError to return.
+            try
             {
-                // Check if this token is an operator.
-                if (OperatorDict.ContainsKey(token))
+                // Iterate over each token to determine its type and how it should be handled.
+                foreach (var token in tokens)
                 {
-                    // Get the correct Operator from the dictionary by its token.
-                    var currentOperator = OperatorDict[token];
-
-                    // Determine the type of Operator.
-                    switch (currentOperator)
+                    // Check if this token is an operator.
+                    if (OperatorDict.ContainsKey(token))
                     {
-                        case GroupingOperator groupingOperator:
-                            // This is a Grouping Operator, i.e. parentheses. 
+                        // Get the correct Operator from the dictionary by its token.
+                        var currentOperator = OperatorDict[token];
 
-                            // Check if the grouping operator opens or closes the group.
-                            if (groupingOperator.OpensGroup)
-                            {
-                                // Opens the group. Simply add to the stack.
-                                operatorStack.Push(groupingOperator);
-                            }
-                            else
-                            {
-                                // Closes the group. 
-                                CloseGroup(valueStack, operatorStack);
-                            }
-                            break;
-                        case ArithmeticOperator arithmeticOperator:
-                            // Determine the type of Arithmetic Operator.
-                            if (arithmeticOperator.HighLevel)
-                            {
-                                // For high-level Arithmetic Operators, just add them to the stack.
-                                operatorStack.Push(arithmeticOperator);
-                            }
-                            else
-                            {
-                                /* For non-high-level Arithmetic Operators, 
-                                   we must first check for another non-high-level Arithmetic Operator
-                                   at the top of the stack. */
-                                if (IsArithmeticAtTop(operatorStack, false, true))
+                        // Determine the type of Operator.
+                        switch (currentOperator)
+                        {
+                            case GroupingOperator groupingOperator:
+                                // This is a Grouping Operator, i.e. parentheses. 
+
+                                // Check if the grouping operator opens or closes the group.
+                                if (groupingOperator.OpensGroup)
+                                    // Opens the group. Simply add to the stack.
+                                    operatorStack.Push(groupingOperator);
+                                else
+                                    // Closes the group. 
+                                    CloseGroup(valueStack, operatorStack);
+                                break;
+                            case ArithmeticOperator arithmeticOperator:
+                                // Determine the type of Arithmetic Operator.
+                                if (arithmeticOperator.HighLevel)
                                 {
-                                    ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+                                    // For high-level Arithmetic Operators, just add them to the stack.
+                                    operatorStack.Push(arithmeticOperator);
                                 }
+                                else
+                                {
+                                    /* For non-high-level Arithmetic Operators, 
+                                       we must first check for another non-high-level Arithmetic Operator
+                                       at the top of the stack. */
+                                    if (IsArithmeticAtTop(operatorStack, false, true))
+                                        ComputeTopOperatorWithTopValues(valueStack, operatorStack);
 
-                                // Now we can add this operator to the stack.
-                                operatorStack.Push(arithmeticOperator);
-                            }
-                            break;
+                                    // Now we can add this operator to the stack.
+                                    operatorStack.Push(arithmeticOperator);
+                                }
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // Check if the token is a variable/value
+                        if (ExpressionUtils.IsVariable(token))
+                            // This is a variable. Determine its true value and add it to the stack.
+                            AddValueToStack(lookup(token), valueStack, operatorStack);
+                        else if (double.TryParse(token, out var value))
+                            // This is a normal integer. Add it to the stack.
+                            AddValueToStack(value, valueStack, operatorStack);
                     }
                 }
-                else
-                {
-                    // Check if the token is a variable/value
-                    if (FormulaUtils.IsVariable(token))
-                    {
-                        // This is a variable. Determine its true value and add it to the stack.
-                        AddValueToStack(lookup(token), valueStack, operatorStack);
-                    }
-                    else if (int.TryParse(token, out var value))
-                    {
-                        // This is a normal integer. Add it to the stack.
-                        AddValueToStack(value, valueStack, operatorStack);
-                    }
-                }
+
+                // Clear out the last remaining non-high-level Arithmetic Operator if there is one.
+                if (operatorStack.Count == 1 && IsArithmeticAtTop(operatorStack, false, true))
+                    ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+
+                // Finally, return the last remaining value.
+                return valueStack.Pop();
             }
-
-            // Clear out the last remaining non-high-level Arithmetic Operator if there is one.
-            if (operatorStack.Count == 1 && IsArithmeticAtTop(operatorStack, false, true))
+            catch (EvaluationException e)
             {
-                ComputeTopOperatorWithTopValues(valueStack, operatorStack);
+                return e.Error;
             }
-
-            // Finally, return the last remaining value.
-            return valueStack.Pop();
         }
 
         /// <summary>
@@ -200,10 +195,9 @@ namespace SpreadsheetUtilities
             {
                 valueStack.Push(arithmeticOperator.Compute(values.Item2, values.Item1));
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
-                //TODO: Not throw
-                throw new ArgumentException("The expression contains an attempt to divide by zero.", e);
+                throw new EvaluationException(new FormulaError("Cannot divide by zero!"));
             }
         }
 
@@ -246,14 +240,30 @@ namespace SpreadsheetUtilities
         /// <returns>A Tuple containing the two values popped.</returns>
         private static Tuple<double, double> PopTwoValues(Stack<double> valueStack)
         {
-            try
-            {
-                return new Tuple<double, double>(valueStack.Pop(), valueStack.Pop());
-            }
-            catch (InvalidOperationException e)
-            {
-                throw new ArgumentException("There are not enough values to pop.", nameof(valueStack), e);
-            }
+            return new Tuple<double, double>(valueStack.Pop(), valueStack.Pop());
+        }
+    }
+
+    /// <inheritdoc />
+    /// <summary>
+    /// This exception is used as a convenient way to propagate a FormulaError up through the helper methods of the Evaluator class.
+    /// </summary>
+    /// <author>Mitch Talmadge, u1031378</author>
+    internal class EvaluationException : Exception
+    {
+        /// <summary>
+        /// The error belonging to this exception.
+        /// </summary>
+        internal FormulaError Error { get; }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Constructs an EvaluationException with the given FormulaError.
+        /// </summary>
+        /// <param name="error">The error to store in this exception.</param>
+        public EvaluationException(FormulaError error)
+        {
+            Error = error;
         }
     }
 }

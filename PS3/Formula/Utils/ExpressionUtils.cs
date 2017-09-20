@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SpreadsheetUtilities.Utils
 {
     /// <summary>
-    /// Provides useful helper / utility methods for parsing and evaluating formulas.
+    /// Provides useful helper / utility methods for parsing and evaluating expressions.
     /// </summary>
     /// <author>Mitch Talmadge, u1031378</author>
-    internal static class FormulaUtils
+    internal static class ExpressionUtils
     {
         /// <summary>
         /// Given an expression, enumerates the tokens that compose it.  Tokens are left paren;
@@ -19,7 +15,7 @@ namespace SpreadsheetUtilities.Utils
         /// followed by zero or more letters, digits, or underscores; a double literal; and anything that doesn't
         /// match one of those patterns.  There are no empty tokens, and no token contains white space.
         /// </summary>
-        internal static IEnumerable<string> GetTokens(string formula)
+        internal static IEnumerable<string> GetTokens(string expression)
         {
             // Patterns for individual tokens
             var lpPattern = @"\(";
@@ -34,7 +30,7 @@ namespace SpreadsheetUtilities.Utils
                 $"({lpPattern}) | ({rpPattern}) | ({opPattern}) | ({varPattern}) | ({doublePattern}) | ({spacePattern})";
 
             // Enumerate matching tokens that don't consist solely of white space.
-            foreach (var token in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))
+            foreach (var token in Regex.Split(expression, pattern, RegexOptions.IgnorePatternWhitespace))
             {
                 // Ensure the token is not purely whitespace.
                 if (!Regex.IsMatch(token, @"^\s*$", RegexOptions.Singleline))
@@ -42,21 +38,6 @@ namespace SpreadsheetUtilities.Utils
                     yield return token;
                 }
             }
-        }
-
-        /// <summary>
-        /// Checks if a given token is a double, and returns the parsed double if it is.
-        /// </summary>
-        /// <param name="token">The token to check.</param>
-        /// <returns>The parsed double if it is a double, or null if it is not.</returns>
-        internal static double? ToDouble(string token)
-        {
-            // Try to parse the token as a double.
-            if (double.TryParse(token, out var parsed))
-                return parsed;
-
-            // Unable to parse.
-            return null;
         }
 
         /// <summary>

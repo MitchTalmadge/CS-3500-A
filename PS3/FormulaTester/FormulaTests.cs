@@ -220,8 +220,8 @@ namespace FormulaTester
         [TestMethod]
         public void PublicTestEvaluateSingleOperations()
         {
-            Assert.AreEqual(15d, new Formula("10 + 5").Evaluate(s => s.Length));
-            Assert.AreEqual(5d, new Formula("10 - 5").Evaluate(s => s.Length));
+            Assert.AreEqual(15.5d, new Formula("10.5 + 5").Evaluate(s => s.Length));
+            Assert.AreEqual(5.5d, new Formula("10.75 - 5.25").Evaluate(s => s.Length));
             Assert.AreEqual(100d, new Formula("10 * 10").Evaluate(s => s.Length));
             Assert.AreEqual(50d, new Formula("100 / 2").Evaluate(s => s.Length));
         }
@@ -235,7 +235,7 @@ namespace FormulaTester
             Assert.AreEqual(27d, new Formula("(2 + 3) * 5 + 2").Evaluate(s => s.Length));
             Assert.AreEqual(1d, new Formula("10 / (5 * 2)").Evaluate(s => s.Length));
             Assert.AreEqual(23d, new Formula("((1 + (6 + 4)) + (4 + 8))").Evaluate(s => s.Length));
-            Assert.AreEqual(0d, new Formula("10 - (50 - 40)").Evaluate(s => s.Length));
+            Assert.AreEqual(0.25d, new Formula("10.5 - (50.80 - 40.55)").Evaluate(s => s.Length));
         }
 
         /// <summary>
@@ -290,6 +290,18 @@ namespace FormulaTester
             Assert.AreEqual(20d, new Formula("(20)").Evaluate(s => s.Length));
             Assert.AreEqual(3d, new Formula("A12").Evaluate(s => s.Length));
             Assert.AreEqual(4d, new Formula("(AB12)").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions with divide-by-zero errors.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateDivideByZero()
+        {
+            Assert.IsInstanceOfType(new Formula("5 / (10 - 10)").Evaluate(s => s.Length), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("0.12345 / (5.00 - (5.25 - 0.25))").Evaluate(s => s.Length), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("1 / (ABCD - 4)").Evaluate(s => s.Length), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("1 / 0").Evaluate(s => s.Length), typeof(FormulaError));
         }
     }
 

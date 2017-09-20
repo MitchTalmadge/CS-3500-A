@@ -117,14 +117,14 @@ namespace SpreadsheetUtilities
                 throw new FormulaFormatException("The expression is empty and cannot be parsed.");
 
             // Get an enumerator for all the tokens in the formula.
-            var tokens = FormulaUtils.GetTokens(Expression).GetEnumerator();
+            var tokens = ExpressionUtils.GetTokens(Expression).GetEnumerator();
 
             // Get the first token out and ensure it is legal.
             // The first token must be either an opening parenthesis, a number, or a variable.
             tokens.MoveNext();
             var token = tokens.Current;
-            if (token != "(" && FormulaUtils.ToDouble(token) == null &&
-                !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
+            if (token != "(" && !double.TryParse(token, out _) &&
+                !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
                     "The first token of the expression must be an opening parenthesis, a number, or a variable.");
 
@@ -150,8 +150,8 @@ namespace SpreadsheetUtilities
                         || lastToken == "*")
                     {
                         if (token != "("
-                            && FormulaUtils.ToDouble(token) == null
-                            && !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
+                            && !double.TryParse(token, out _)
+                            && !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                             throw new FormulaFormatException(
                                 "Any tokens following an opening parenthesis or operator must be an opening parenthesis, a number, or a variable.\n" +
                                 $"The token '{token}' is incorrectly following the token '{lastToken}'");
@@ -160,8 +160,8 @@ namespace SpreadsheetUtilities
                     /* Check that any token immediately following a number, a variable, or a closing parenthesis 
                      * is either an operator or a closing parenthesis */
                     if (lastToken == ")"
-                        || FormulaUtils.ToDouble(lastToken) != null
-                        || FormulaUtils.IsVariable(lastToken) && Validator(Normalizer(lastToken)))
+                        || double.TryParse(lastToken, out _)
+                        || ExpressionUtils.IsVariable(lastToken) && Validator(Normalizer(lastToken)))
                     {
                         if (token != ")"
                             && token != "+"
@@ -197,8 +197,8 @@ namespace SpreadsheetUtilities
 
             // Check that the last token is legal.
             // The last token must be a closing parenthesis, a number, or a variable.
-            if (token != ")" && FormulaUtils.ToDouble(token) == null &&
-                !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
+            if (token != ")" && !double.TryParse(token, out _) &&
+                !(ExpressionUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
                     "The last token of the expression must be a closing parenthesis, a number, or a variable.");
 
@@ -231,7 +231,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return Evaluator.Evaluate(Expression, Normalizer, Validator, lookup);
+            return Evaluator.Evaluate(Expression, Normalizer, lookup);
         }
 
         /// <summary>
