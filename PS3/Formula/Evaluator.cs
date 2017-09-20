@@ -113,7 +113,7 @@ namespace SpreadsheetUtilities
                         // Check if the token is a variable/value
                         if (ExpressionUtils.IsVariable(token))
                             // This is a variable. Determine its true value and add it to the stack.
-                            AddValueToStack(lookup(token), valueStack, operatorStack);
+                            AddValueToStack(lookup(normalizer(token)), valueStack, operatorStack);
                         else if (double.TryParse(token, out var value))
                             // This is a normal integer. Add it to the stack.
                             AddValueToStack(value, valueStack, operatorStack);
