@@ -213,6 +213,84 @@ namespace FormulaTester
         {
             Assert.ThrowsException<FormulaFormatException>(() => new Formula(null));
         }
+
+        /// <summary>
+        /// Tests expressions which contain a single operation.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateSingleOperations()
+        {
+            Assert.AreEqual(15d, new Formula("10 + 5").Evaluate(s => s.Length));
+            Assert.AreEqual(5d, new Formula("10 - 5").Evaluate(s => s.Length));
+            Assert.AreEqual(100d, new Formula("10 * 10").Evaluate(s => s.Length));
+            Assert.AreEqual(50d, new Formula("100 / 2").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions which contain multiple operations.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateComplexOperations()
+        {
+            Assert.AreEqual(27d, new Formula("(2 + 3) * 5 + 2").Evaluate(s => s.Length));
+            Assert.AreEqual(1d, new Formula("10 / (5 * 2)").Evaluate(s => s.Length));
+            Assert.AreEqual(23d, new Formula("((1 + (6 + 4)) + (4 + 8))").Evaluate(s => s.Length));
+            Assert.AreEqual(0d, new Formula("10 - (50 - 40)").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions which may evaluate incorrectly if the order of operations are not correct.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateOrderOfOperations()
+        {
+            // Multiplication
+            Assert.AreEqual(30d, new Formula("5 + 5 * 5").Evaluate(s => s.Length));
+            Assert.AreEqual(90d, new Formula("10 * 10 - 10").Evaluate(s => s.Length));
+
+            // Division
+            Assert.AreEqual(6d, new Formula("5 + 5 / 5").Evaluate(s => s.Length));
+            Assert.AreEqual(-9d, new Formula("10 / 10 - 10").Evaluate(s => s.Length));
+
+            // Parentheses
+            Assert.AreEqual(50d, new Formula("(5 + 5) * 5").Evaluate(s => s.Length));
+            Assert.AreEqual(2d, new Formula("10 / (10 - 5)").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions in which multiple sets of parentheses are nested within each other.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateNestedParentheses()
+        {
+            Assert.AreEqual(145d, new Formula("(10 + (5 + 2) * (10 + 10)) - 5").Evaluate(s => s.Length));
+            Assert.AreEqual(15d, new Formula("(((((10 + 5)))))").Evaluate(s => s.Length));
+            Assert.AreEqual(60d, new Formula("(((((10 + 5 * (((5 + 5))))))))").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions containing variables.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateVariables()
+        {
+            Assert.AreEqual(10d, new Formula("AA10 + aB5 + Cd3").Evaluate(s => s.Length));
+            Assert.AreEqual(14d, new Formula("AB25 + 10").Evaluate(s => s.Length));
+            Assert.AreEqual(60d, new Formula("(a10 + b12) * 10").Evaluate(s => s.Length));
+            Assert.AreEqual(30d, new Formula("(7 + 3) * A14").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
+        /// Tests expressions containing nothing more than a single value.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateNoOperations()
+        {
+            Assert.AreEqual(10d, new Formula("10").Evaluate(s => s.Length));
+            Assert.AreEqual(20d, new Formula("(20)").Evaluate(s => s.Length));
+            Assert.AreEqual(3d, new Formula("A12").Evaluate(s => s.Length));
+            Assert.AreEqual(4d, new Formula("(AB12)").Evaluate(s => s.Length));
+        }
     }
 
 }

@@ -19,9 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+using SpreadsheetUtilities.Utils;
 
 namespace SpreadsheetUtilities
 {
@@ -42,8 +40,24 @@ namespace SpreadsheetUtilities
     /// that it consist of a letter or underscore followed by zero or more letters, underscores,
     /// or digits.)  Their use is described in detail in the constructor and method comments.
     /// </summary>
+    /// <author>Mitch Talmadge, u1031378</author>
     public class Formula
     {
+        /// <summary>
+        /// The expression, guaranteed to be syntactically correct.
+        /// </summary>
+        public string Expression { get; }
+
+        /// <summary>
+        /// The variable normalizer function.
+        /// </summary>
+        public Func<string, string> Normalizer { get; }
+
+        /// <summary>
+        /// The variable validation function.
+        /// </summary>
+        public Func<string, bool> Validator { get; }
+
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically invalid,
@@ -79,42 +93,40 @@ namespace SpreadsheetUtilities
         /// new Formula("x+y3", N, V) should throw an exception, since V(N("x")) is false
         /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
         /// </summary>
-        public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
+        public Formula(String expression, Func<string, string> normalizer, Func<string, bool> validator)
         {
-            CheckFormulaSyntax(formula, normalize, isValid);
+            // Set instance properties.
+            Expression = expression;
+            Normalizer = normalizer;
+            Validator = validator;
+
+            // Check the syntax of the expression to ensure it can be properly evaluated.
+            CheckExpressionSyntax();
         }
 
         /// <summary>
-        /// Checks that the given formula, along with a normalizer and validator, are syntactically correct.
+        /// Ensures that this Formula can be evaluated without error by checking its expression's syntax.
         /// Throws a FormulaFormatException if there are any problems.
         /// </summary>
-        /// <param name="formula">The formula to check.</param>
-        /// <param name="normalize">The normalizer.</param>
-        /// <param name="isValid">The validator.</param>
-        private static void CheckFormulaSyntax(string formula, Func<string, string> normalize,
-            Func<string, bool> isValid)
+        private void CheckExpressionSyntax()
         {
             // Check for null or empty formulas.
-            if (formula == null)
-                throw new FormulaFormatException("The formula is null and cannot be parsed.");
-            if (formula.Trim() == "")
-                throw new FormulaFormatException("The formula is empty and cannot be parsed.");
+            if (Expression == null)
+                throw new FormulaFormatException("The expression is null and cannot be parsed.");
+            if (Expression.Trim() == "")
+                throw new FormulaFormatException("The expression is empty and cannot be parsed.");
 
             // Get an enumerator for all the tokens in the formula.
-            var tokens = GetTokens(formula).GetEnumerator();
-
-            foreach (var t in GetTokens(formula))
-            {
-                
-            }
+            var tokens = FormulaUtils.GetTokens(Expression).GetEnumerator();
 
             // Get the first token out and ensure it is legal.
             // The first token must be either an opening parenthesis, a number, or a variable.
             tokens.MoveNext();
             var token = tokens.Current;
-            if (token != "(" && ToDouble(token) == null && !(IsVariable(token) && isValid(normalize(token))))
+            if (token != "(" && FormulaUtils.ToDouble(token) == null &&
+                !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
-                    "The first token of the formula must be an opening parenthesis, a number, or a variable.");
+                    "The first token of the expression must be an opening parenthesis, a number, or a variable.");
 
             // Keep track of number of opening and closing parentheses.
             int numOpeningParentheses = 0, numClosingParentheses = 0;
@@ -135,13 +147,11 @@ namespace SpreadsheetUtilities
                         || lastToken == "+"
                         || lastToken == "-"
                         || lastToken == "/"
-                        || lastToken == "*"
-                    )
+                        || lastToken == "*")
                     {
                         if (token != "("
-                            && ToDouble(token) == null
-                            && !(IsVariable(token) && isValid(normalize(token)))
-                        )
+                            && FormulaUtils.ToDouble(token) == null
+                            && !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
                             throw new FormulaFormatException(
                                 "Any tokens following an opening parenthesis or operator must be an opening parenthesis, a number, or a variable.\n" +
                                 $"The token '{token}' is incorrectly following the token '{lastToken}'");
@@ -150,16 +160,14 @@ namespace SpreadsheetUtilities
                     /* Check that any token immediately following a number, a variable, or a closing parenthesis 
                      * is either an operator or a closing parenthesis */
                     if (lastToken == ")"
-                        || ToDouble(lastToken) != null
-                        || IsVariable(lastToken) && isValid(normalize(lastToken))
-                    )
+                        || FormulaUtils.ToDouble(lastToken) != null
+                        || FormulaUtils.IsVariable(lastToken) && Validator(Normalizer(lastToken)))
                     {
                         if (token != ")"
                             && token != "+"
                             && token != "-"
                             && token != "/"
-                            && token != "*"
-                        )
+                            && token != "*")
                             throw new FormulaFormatException(
                                 "Any tokens following a closing parenthesis, number, or variable must be a closing parenthesis or operator.\n" +
                                 $"The token '{token}' is incorrectly following the token '{lastToken}'");
@@ -178,7 +186,7 @@ namespace SpreadsheetUtilities
                         numClosingParentheses++;
                         // Ensure we have not seen more closing parentheses than opening.
                         if (numClosingParentheses > numOpeningParentheses)
-                            throw new FormulaFormatException("There are too many closing parentheses.");
+                            throw new FormulaFormatException("There are too many closing parentheses in the expression.");
                         break;
                 }
 
@@ -189,40 +197,15 @@ namespace SpreadsheetUtilities
 
             // Check that the last token is legal.
             // The last token must be a closing parenthesis, a number, or a variable.
-            if (token != ")" && ToDouble(token) == null && !(IsVariable(token) && isValid(normalize(token))))
+            if (token != ")" && FormulaUtils.ToDouble(token) == null &&
+                !(FormulaUtils.IsVariable(token) && Validator(Normalizer(token))))
                 throw new FormulaFormatException(
-                    "The last token of the formula must be a closing parenthesis, a number, or a variable.");
+                    "The last token of the expression must be a closing parenthesis, a number, or a variable.");
 
             // Make sure the parentheses are balanced (opening == closed)
             if (numOpeningParentheses != numClosingParentheses)
                 throw new FormulaFormatException(
                     "Parentheses are unbalanced; the number of opening parentheses does not match the number of closing parentheses.");
-        }
-
-        /// <summary>
-        /// Checks if a given token is a double, and returns the parsed double if it is.
-        /// </summary>
-        /// <param name="token">The token to check.</param>
-        /// <returns>The parsed double if it is a double, or null if it is not.</returns>
-        private static double? ToDouble(string token)
-        {
-            // Try to parse the token as a double.
-            if (double.TryParse(token, out var parsed))
-                return parsed; 
-
-            // Unable to parse.
-            return null;
-        }
-
-        /// <summary>
-        /// Determines if the given token has the syntax of a variable.
-        /// </summary>
-        /// <param name="token">The token to check.</param>
-        /// <returns>True if the token is a variable, false otherwise.</returns>
-        private static bool IsVariable(string token)
-        {
-            const string pattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
-            return Regex.IsMatch(token, pattern);
         }
 
         /// <summary>
@@ -248,7 +231,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
+            return Evaluator.Evaluate(Expression, Normalizer, Validator, lookup);
         }
 
         /// <summary>
@@ -335,36 +318,6 @@ namespace SpreadsheetUtilities
         public override int GetHashCode()
         {
             return 0;
-        }
-
-        /// <summary>
-        /// Given an expression, enumerates the tokens that compose it.  Tokens are left paren;
-        /// right paren; one of the four operator symbols; a string consisting of a letter or underscore
-        /// followed by zero or more letters, digits, or underscores; a double literal; and anything that doesn't
-        /// match one of those patterns.  There are no empty tokens, and no token contains white space.
-        /// </summary>
-        private static IEnumerable<string> GetTokens(String formula)
-        {
-            // Patterns for individual tokens
-            String lpPattern = @"\(";
-            String rpPattern = @"\)";
-            String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
-            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
-            String spacePattern = @"\s+";
-
-            // Overall pattern
-            String pattern = String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
-                lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
-
-            // Enumerate matching tokens that don't consist solely of white space.
-            foreach (String s in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))
-            {
-                if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))
-                {
-                    yield return s;
-                }
-            }
         }
     }
 
