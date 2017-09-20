@@ -247,7 +247,29 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
-            return null;
+            // The variables which have already been seen and returned, to prevent duplicate returns.
+            var seenVariables = new HashSet<string>();
+
+            // Iterate over each token in the expression.
+            foreach (var token in ExpressionUtils.GetTokens(Expression))
+            {
+                // Only handle tokens which are variables.
+                if (!ExpressionUtils.IsVariable(token))
+                    continue;
+
+                // Normalize the token.
+                var normalizedToken = Normalizer(token);
+
+                // Check that we have already seen this token.
+                if (seenVariables.Contains(normalizedToken))
+                    continue;
+
+                // Mark the token as seen.
+                seenVariables.Add(normalizedToken);
+
+                // Return the token.
+                yield return normalizedToken;
+            }
         }
 
         /// <summary>

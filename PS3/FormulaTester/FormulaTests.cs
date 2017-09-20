@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 
@@ -307,6 +309,25 @@ namespace FormulaTester
             Assert.IsInstanceOfType(new Formula("0.12345 / (5.00 - (5.25 - 0.25))").Evaluate(s => s.Length), typeof(FormulaError));
             Assert.IsInstanceOfType(new Formula("1 / (ABCD - 4)").Evaluate(s => s.Length), typeof(FormulaError));
             Assert.IsInstanceOfType(new Formula("1 / 0").Evaluate(s => s.Length), typeof(FormulaError));
+        }
+
+        /// <summary>
+        /// Tests the GetVariables method of Formula to make sure the correct variables are returned.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestGetVariables()
+        {
+            // Default Normalizer
+            CollectionAssert.AreEqual(new[]{"ABC"}, new Formula("ABC").GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"abc", "ABC"}, new Formula("abc + ABC").GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"A10", "B6", "a4", "a10"}, new Formula("A10 + 15 - (10 * B6) / a4 - a10").GetVariables().ToList());
+
+            // Capital Normalizer
+            CollectionAssert.AreEqual(new[]{"ABC"}, new Formula("abc", s => s.ToUpper(), s => true).GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"ABC"}, new Formula("abc - ABC", s => s.ToUpper(), s => true).GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"A", "B", "C", "D", "E"}, new Formula("a - A + b - B * c / C * d - D + a - c + d + e / B", s => s.ToUpper(), s => true).GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"A", "D", "E", "F", "B", "C"}, new Formula("a - d - e - f / b * c", s => s.ToUpper(), s => true).GetVariables().ToList());
+            CollectionAssert.AreEqual(new[]{"A10", "B6", "A4"}, new Formula("A10 + 15 - (10 * B6) / a4 - a10", s => s.ToUpper(), s => true).GetVariables().ToList());
         }
     }
 
