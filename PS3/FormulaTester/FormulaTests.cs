@@ -312,6 +312,18 @@ namespace FormulaTester
         }
 
         /// <summary>
+        /// Tests expressions with variable(s) that have no value.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateVariableHasNoValue()
+        {
+            Assert.IsInstanceOfType(new Formula("5 / (AB - 10)").Evaluate(s => throw new ArgumentException()), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("0.12345 / (5.00 - (_123 - 0.25))").Evaluate(s => throw new ArgumentException()), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("1 / (ABCD - 4)").Evaluate(s => throw new ArgumentException()), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("1 / ab4").Evaluate(s => throw new ArgumentException()), typeof(FormulaError));
+        }
+
+        /// <summary>
         /// Tests the GetVariables method of Formula to make sure the correct variables are returned.
         /// </summary>
         [TestMethod]
@@ -330,6 +342,9 @@ namespace FormulaTester
             CollectionAssert.AreEqual(new[]{"A10", "B6", "A4"}, new Formula("A10 + 15 - (10 * B6) / a4 - a10", s => s.ToUpper(), s => true).GetVariables().ToList());
         }
 
+        /// <summary>
+        /// Tests that ToString works correctly.
+        /// </summary>
         [TestMethod]
         public void PublicTestToString()
         {
@@ -340,6 +355,7 @@ namespace FormulaTester
             Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5").ToString());
             Assert.AreEqual("Ab - ac", new Formula("Ab- ac").ToString());
             Assert.AreEqual("(10 - 5) + 5 - AB * (_6c + c_d)", new Formula("(10-5)+5 - AB *(_6c +c_d)").ToString());
+            Assert.AreEqual("(10 - 5) + 5 - AB * (_6c + c_d)", new Formula("(10.00000000-5.0000000000000)+5.0000000 - AB *(_6c +c_d)").ToString());
 
             // Capital Normalizer
             Assert.AreEqual("10", new Formula("10", s => s.ToUpper(), s => true).ToString());
@@ -348,6 +364,53 @@ namespace FormulaTester
             Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5", s => s.ToUpper(), s => true).ToString());
             Assert.AreEqual("AB - AC", new Formula("Ab- ac", s => s.ToUpper(), s => true).ToString());
             Assert.AreEqual("(10 - 5) + 5 - AB * (_6C + C_D)", new Formula("(10-5)+5 - AB *(_6c +c_d)", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10 - 5) + 5 - AB * (_6C + C_D)", new Formula("(10.00000000-5.0000000000000)+5.0000000 - AB *(_6c +c_d)", s => s.ToUpper(), s => true).ToString());
+        }
+
+        /// <summary>
+        /// Tests that a formula created with another formula's ToString will equal that formula.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestToStringEquality()
+        {
+            // Default Normalizer
+            var formula = new Formula("(10-5)+5 - AB *(_6c +c_d)");
+            Assert.AreEqual(formula, new Formula(formula.ToString()));
+
+            // Capital Normalizer
+            formula = new Formula("(10-5)+5 - AB *(_6c +c_d)", s => s.ToUpper(), s => true);
+            Assert.AreEqual(formula, new Formula(formula.ToString()));
+        }
+
+        /// <summary>
+        /// Tests Equals, Hashcode, ==, and != for formulas.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEquality()
+        {
+            // Idential expressions
+            Assert.IsTrue(new Formula("10+5").Equals(new Formula("10+5")));
+            Assert.AreEqual(new Formula("10+5").GetHashCode(), new Formula("10+5").GetHashCode());
+            Assert.IsTrue(new Formula("10+5") == new Formula("10+5"));
+            Assert.IsFalse(new Formula("10+5") != new Formula("10+5"));
+
+            // Variable and spacing
+            Assert.IsTrue(new Formula("10+AB").Equals(new Formula("10 + AB")));
+            Assert.AreEqual(new Formula("10+AB").GetHashCode(), new Formula("10 + AB").GetHashCode());
+            Assert.IsTrue(new Formula("10+AB") == new Formula("10 + AB"));
+            Assert.IsFalse(new Formula("10+AB") != new Formula("10 + AB"));
+
+            // Large spacing
+            Assert.IsTrue(new Formula("10+5").Equals(new Formula("10    +     5")));
+            Assert.AreEqual(new Formula("10+5").GetHashCode(), new Formula("10    +     5").GetHashCode());
+            Assert.IsTrue(new Formula("10+5") == new Formula("10    +     5"));
+            Assert.IsFalse(new Formula("10+5") != new Formula("10    +     5"));
+
+            // Complex Equation
+            Assert.IsTrue(new Formula("(10-5)+5 - AB *(_6c +c_d)").Equals(new Formula("(10 - 5) + 5 - AB * (_6c + c_d)")));
+            Assert.AreEqual(new Formula("(10-5)+5 - AB *(_6c +c_d)").GetHashCode(), new Formula("(10 - 5) + 5 - AB * (_6c + c_d)").GetHashCode());
+            Assert.IsTrue(new Formula("(10-5)+5 - AB *(_6c +c_d)") == new Formula("(10 - 5) + 5 - AB * (_6c + c_d)"));
+            Assert.IsFalse(new Formula("(10-5)+5 - AB *(_6c +c_d)") != new Formula("(10 - 5) + 5 - AB * (_6c + c_d)"));
         }
     }
 

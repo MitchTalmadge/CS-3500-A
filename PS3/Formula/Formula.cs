@@ -297,6 +297,9 @@ namespace SpreadsheetUtilities
                 // Check for variables, which need to be normalized.
                 else if (ExpressionUtils.IsVariable(token))
                     stringBuilder.Append(Normalizer(token));
+                // Check for numbers.
+                else if (double.TryParse(token, out var number))
+                    stringBuilder.Append(number);
                 // Anything else can just be appended.
                 else
                     stringBuilder.Append(token);
@@ -327,7 +330,12 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            return false;
+            // Check for null or non-formula.
+            if (ReferenceEquals(null, obj) || !(obj is Formula other))
+                return false;
+
+            // Equality is determined by checking string representations.
+            return ToString().Equals(other.ToString());
         }
 
         /// <summary>
@@ -337,7 +345,16 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            return false;
+            // If both are null, they are equal.
+            if (ReferenceEquals(null, f1) && ReferenceEquals(null, f2))
+                return true;
+
+            // If one or the other is null, they are not equal.
+            if (ReferenceEquals(null, f1) || ReferenceEquals(null, f2))
+                return false;
+
+            // Compare with Equals.
+            return f1.Equals(f2);
         }
 
         /// <summary>
@@ -347,7 +364,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            return false;
+            // != is inverse of ==
+            return !(f1 == f2);
         }
 
         /// <summary>
@@ -357,7 +375,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()
         {
-            return 0;
+            // Simply use the hashcode of the string representation.
+            return ToString().GetHashCode();
         }
     }
 
