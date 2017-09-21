@@ -181,13 +181,13 @@ namespace SpreadsheetUtilities
             // Iterate over each token in the formula.
             foreach (var token in ExpressionUtils.GetTokens(_expression))
             {
-                // Check for operators, which are given extra spacing.
-                if (token == "+" || token == "-" || token == "/" || token == "*")
+                // Check for Arithmetic Operators, which are given extra spacing.
+                if (OperatorUtils.IsArithmeticOperator(token))
                     stringBuilder.Append(' ').Append(token).Append(' ');
                 // Check for variables, which need to be normalized.
                 else if (ExpressionUtils.IsVariable(token))
                     stringBuilder.Append(_normalizer(token));
-                // Check for numbers.
+                // Check for numbers, which will be converted to double and back to eliminate duplicates (1.000 == 1)
                 else if (double.TryParse(token, out var number))
                     stringBuilder.Append(number);
                 // Anything else can just be appended.
@@ -221,11 +221,11 @@ namespace SpreadsheetUtilities
         public override bool Equals(object obj)
         {
             // Check for null or non-formula.
-            if (ReferenceEquals(null, obj) || !(obj is Formula other))
+            if (ReferenceEquals(null, obj) || !(obj is Formula))
                 return false;
 
-            // Equality is determined by checking string representations.
-            return ToString().Equals(other.ToString());
+            // Equality is determined by checking hash codes.
+            return GetHashCode() == obj.GetHashCode();
         }
 
         /// <summary>
