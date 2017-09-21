@@ -84,12 +84,6 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String expression, Func<string, string> normalizer, Func<string, bool> validator)
         {
-            // Check for null or empty expressions.
-            if (expression == null)
-                throw new FormulaFormatException("The expression is null and cannot be parsed.");
-            if (expression.Trim() == "")
-                throw new FormulaFormatException("The expression is empty and cannot be parsed.");
-
             // Check the syntax of the expression to ensure it can be properly evaluated.
             var results = ExpressionSyntaxChecker.CheckSyntax(expression, normalizer, validator);
 

@@ -34,6 +34,13 @@ namespace SpreadsheetUtilities
         internal static Tuple<string[], string[]> CheckSyntax(string expression, Normalizer normalizer,
             Validator validator)
         {
+            // Check for null or empty expressions.
+            if (expression == null)
+                throw new FormulaFormatException("The expression is null and cannot be parsed.");
+            if (expression.Trim() == "")
+                throw new FormulaFormatException("The expression is empty and cannot be parsed.");
+
+            // Break the expression into individual tokens.
             var tokens = ExpressionUtils.GetTokens(expression).ToArray();
 
             // Check the first token for syntax errors.
