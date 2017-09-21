@@ -51,6 +51,11 @@ namespace SpreadsheetUtilities
         private readonly string[] _tokens;
 
         /// <summary>
+        /// All normalized variables in order of occurrence, with no duplicates.
+        /// </summary>
+        private readonly string[] _variables;
+
+        /// <summary>
         /// The variable normalizer function.
         /// </summary>
         private readonly Func<string, string> _normalizer;
@@ -104,6 +109,9 @@ namespace SpreadsheetUtilities
 
             // Check the syntax of the expression to ensure it can be properly evaluated.
             ExpressionSyntaxChecker.CheckSyntax(_tokens, normalizer, validator);
+
+            // Identify, normalize, and save variables.
+            _variables = ExpressionUtils.GetNormalizedVariables(_tokens, normalizer).ToArray();
         }
 
         /// <summary>
@@ -145,29 +153,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
-            // The variables which have already been seen and returned, to prevent duplicate returns.
-            var seenVariables = new HashSet<string>();
-
-            // Iterate over each token in the expression.
-            foreach (var token in _tokens)
-            {
-                // Only handle tokens which are variables.
-                if (!ExpressionUtils.IsVariable(token))
-                    continue;
-
-                // Normalize the token.
-                var normalizedToken = _normalizer(token);
-
-                // Check that we have already seen this token.
-                if (seenVariables.Contains(normalizedToken))
-                    continue;
-
-                // Mark the token as seen.
-                seenVariables.Add(normalizedToken);
-
-                // Return the token.
-                yield return normalizedToken;
-            }
+            return _variables;
         }
 
         /// <summary>
