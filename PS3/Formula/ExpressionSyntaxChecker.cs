@@ -93,7 +93,7 @@ namespace SpreadsheetUtilities
         {
             if (!OperatorUtils.IsOpeningGroupOperator(token)
                 && !double.TryParse(token, out _)
-                && !(ExpressionUtils.IsVariable(token) && validator(normalizer(token))))
+                && !ExpressionUtils.IsValidVariable(token, normalizer, validator))
                 throw new FormulaFormatException(
                     "The first token of the expression must be an opening parenthesis, a number, or a variable.");
         }
@@ -109,7 +109,7 @@ namespace SpreadsheetUtilities
         {
             if (!OperatorUtils.IsClosingGroupOperator(token)
                 && !double.TryParse(token, out _)
-                && !(ExpressionUtils.IsVariable(token) && validator(normalizer(token))))
+                && !ExpressionUtils.IsValidVariable(token, normalizer, validator))
                 throw new FormulaFormatException(
                     "The last token of the expression must be a closing parenthesis, a number, or a variable.");
         }
@@ -140,7 +140,7 @@ namespace SpreadsheetUtilities
             // Make sure the current token is either an opening group operator, a number, or a variable.
             if (!OperatorUtils.IsOpeningGroupOperator(currentToken)
                 && !double.TryParse(currentToken, out _)
-                && !(ExpressionUtils.IsVariable(currentToken) && validator(normalizer(currentToken))))
+                && !ExpressionUtils.IsValidVariable(currentToken, normalizer, validator))
                 throw new FormulaFormatException(
                     "Any tokens following an opening parenthesis or operator must be an opening parenthesis, a number, or a variable.\n" +
                     $"The token '{currentToken}' is incorrectly following the token '{previousToken}'");
@@ -167,7 +167,7 @@ namespace SpreadsheetUtilities
             // Make sure the previous token was either a closing group operator, a number, or a variable.
             if (!OperatorUtils.IsClosingGroupOperator(previousToken)
                 && !double.TryParse(previousToken, out _)
-                && (!ExpressionUtils.IsVariable(previousToken) || !validator(normalizer(previousToken))))
+                && !ExpressionUtils.IsValidVariable(previousToken, normalizer, validator))
                 return;
 
             // Make sure the current token is either a closing group operator or an arithmetic operator.

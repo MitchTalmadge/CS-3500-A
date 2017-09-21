@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using Normalizer = System.Func<string, string>;
+using Validator = System.Func<string, bool>;
+
 namespace SpreadsheetUtilities.Utils
 {
     /// <summary>
@@ -49,6 +52,18 @@ namespace SpreadsheetUtilities.Utils
         {
             const string pattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
             return Regex.IsMatch(token, pattern);
+        }
+
+        /// <summary>
+        /// Determines if the given token is a valid variable, both syntactically and literally.
+        /// </summary>
+        /// <param name="token">The token to check.</param>
+        /// <param name="normalizer">The variable normalizer.</param>
+        /// <param name="validator">The variable validator.</param>
+        /// <returns></returns>
+        internal static bool IsValidVariable(string token, Normalizer normalizer, Validator validator)
+        {
+            return IsVariable(token) && validator(normalizer(token));
         }
 
     }
