@@ -46,11 +46,6 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         /// <summary>
-        /// The expression, guaranteed to be syntactically correct.
-        /// </summary>
-        private readonly string _expression;
-
-        /// <summary>
         /// All tokens in the expression.
         /// </summary>
         private readonly string[] _tokens;
@@ -104,7 +99,6 @@ namespace SpreadsheetUtilities
                 throw new FormulaFormatException("The expression is empty and cannot be parsed.");
 
             // Set instance properties.
-            _expression = expression;
             _tokens = ExpressionUtils.GetTokens(expression).ToArray();
             _normalizer = normalizer;
 
