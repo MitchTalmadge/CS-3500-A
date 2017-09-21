@@ -47,17 +47,12 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// The expression, guaranteed to be syntactically correct.
         /// </summary>
-        public string Expression { get; }
+        private readonly string _expression;
 
         /// <summary>
         /// The variable normalizer function.
         /// </summary>
-        public Func<string, string> Normalizer { get; }
-
-        /// <summary>
-        /// The variable validation function.
-        /// </summary>
-        public Func<string, bool> Validator { get; }
+        private readonly Func<string, string> _normalizer;
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
@@ -97,9 +92,8 @@ namespace SpreadsheetUtilities
         public Formula(String expression, Func<string, string> normalizer, Func<string, bool> validator)
         {
             // Set instance properties.
-            Expression = expression;
-            Normalizer = normalizer;
-            Validator = validator;
+            _expression = expression;
+            _normalizer = normalizer;
 
             // Check the syntax of the expression to ensure it can be properly evaluated.
             ExpressionSyntaxChecker.CheckSyntax(expression, normalizer, validator);
@@ -128,7 +122,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return Evaluator.Evaluate(Expression, Normalizer, lookup);
+            return Evaluator.Evaluate(_expression, _normalizer, lookup);
         }
 
         /// <summary>
@@ -148,14 +142,14 @@ namespace SpreadsheetUtilities
             var seenVariables = new HashSet<string>();
 
             // Iterate over each token in the expression.
-            foreach (var token in ExpressionUtils.GetTokens(Expression))
+            foreach (var token in ExpressionUtils.GetTokens(_expression))
             {
                 // Only handle tokens which are variables.
                 if (!ExpressionUtils.IsVariable(token))
                     continue;
 
                 // Normalize the token.
-                var normalizedToken = Normalizer(token);
+                var normalizedToken = _normalizer(token);
 
                 // Check that we have already seen this token.
                 if (seenVariables.Contains(normalizedToken))
@@ -185,14 +179,14 @@ namespace SpreadsheetUtilities
             var stringBuilder = new StringBuilder();
 
             // Iterate over each token in the formula.
-            foreach (var token in ExpressionUtils.GetTokens(Expression))
+            foreach (var token in ExpressionUtils.GetTokens(_expression))
             {
                 // Check for operators, which are given extra spacing.
                 if (token == "+" || token == "-" || token == "/" || token == "*")
                     stringBuilder.Append(' ').Append(token).Append(' ');
                 // Check for variables, which need to be normalized.
                 else if (ExpressionUtils.IsVariable(token))
-                    stringBuilder.Append(Normalizer(token));
+                    stringBuilder.Append(_normalizer(token));
                 // Check for numbers.
                 else if (double.TryParse(token, out var number))
                     stringBuilder.Append(number);
@@ -276,11 +270,13 @@ namespace SpreadsheetUtilities
         }
     }
 
+    /// <inheritdoc />
     /// <summary>
     /// Used to report syntactic errors in the argument to the Formula constructor.
     /// </summary>
     public class FormulaFormatException : Exception
     {
+        /// <inheritdoc />
         /// <summary>
         /// Constructs a FormulaFormatException containing the explanatory message.
         /// </summary>
