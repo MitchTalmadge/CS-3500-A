@@ -2,7 +2,7 @@
 {
     /// <inheritdoc />
     /// <summary>
-    /// An Arithmetic Operator that performs addition.
+    ///     An Arithmetic Operator that performs addition.
     /// </summary>
     /// <author>Mitch Talmadge, u1031378</author>
     internal class AdditionArithmeticOperator : ArithmeticOperator
