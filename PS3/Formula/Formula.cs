@@ -62,19 +62,6 @@ namespace SpreadsheetUtilities
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
-        /// described in the class comment.  If the expression is syntactically invalid,
-        /// throws a FormulaFormatException with an explanatory Message.
-        /// 
-        /// The associated normalizer is the identity function, and the associated validator
-        /// maps every string to true.  
-        /// </summary>
-        public Formula(String formula) :
-            this(formula, s => s, s => true)
-        {
-        }
-
-        /// <summary>
-        /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically incorrect,
         /// throws a FormulaFormatException with an explanatory Message.
         /// 
@@ -103,15 +90,26 @@ namespace SpreadsheetUtilities
             if (expression.Trim() == "")
                 throw new FormulaFormatException("The expression is empty and cannot be parsed.");
 
-            // Set instance properties.
-            _tokens = ExpressionUtils.GetTokens(expression).ToArray();
-            _normalizer = normalizer;
-
             // Check the syntax of the expression to ensure it can be properly evaluated.
-            ExpressionSyntaxChecker.CheckSyntax(_tokens, normalizer, validator);
+            var results = ExpressionSyntaxChecker.CheckSyntax(expression, normalizer, validator);
 
-            // Identify, normalize, and save variables.
-            _variables = ExpressionUtils.GetNormalizedVariables(_tokens, normalizer).ToArray();
+            // Set instance properties.
+            _tokens = results.Item1;
+            _variables = results.Item2;
+            _normalizer = normalizer;
+        }
+
+        /// <summary>
+        /// Creates a Formula from a string that consists of an infix expression written as
+        /// described in the class comment.  If the expression is syntactically invalid,
+        /// throws a FormulaFormatException with an explanatory Message.
+        /// 
+        /// The associated normalizer is the identity function, and the associated validator
+        /// maps every string to true.  
+        /// </summary>
+        public Formula(String formula) :
+            this(formula, s => s, s => true)
+        {
         }
 
         /// <summary>

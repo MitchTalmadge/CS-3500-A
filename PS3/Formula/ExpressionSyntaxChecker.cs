@@ -1,4 +1,7 @@
-﻿using SpreadsheetUtilities.Utils;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using SpreadsheetUtilities.Utils;
 using Normalizer = System.Func<string, string>;
 using Validator = System.Func<string, bool>;
 
@@ -14,25 +17,46 @@ namespace SpreadsheetUtilities
         /// Ensures that the provided expression can be evaluated without error.
         /// Throws a FormulaFormatException if there are any problems.
         /// </summary>
-        /// <param name="expressionTokens">The individual tokens of the expression to check.</param>
+        /// <param name="expression">The expression to check.</param>
         /// <param name="normalizer">The variable normalizer.</param>
         /// <param name="validator">The variable validator.</param>
-        internal static void CheckSyntax(string[] expressionTokens, Normalizer normalizer, Validator validator)
+        /// <returns>
+        /// A Tuple containing: 
+        /// <list type="number">
+        ///     <item>
+        ///         An array of the individual tokens of the expression
+        ///     </item>
+        ///     <item>
+        ///         An array of the normalized variables without duplicates, in order of occurence.
+        ///     </item>
+        /// </list>
+        /// </returns>
+        internal static Tuple<string[], string[]> CheckSyntax(string expression, Normalizer normalizer,
+            Validator validator)
         {
+            var tokens = ExpressionUtils.GetTokens(expression).ToArray();
+
             // Check the first token for syntax errors.
-            CheckFirstToken(expressionTokens[0], normalizer, validator);
+            CheckFirstToken(tokens[0], normalizer, validator);
 
             // Check the final token for syntax errors.
-            CheckFinalToken(expressionTokens[expressionTokens.Length - 1], normalizer, validator);
+            CheckFinalToken(tokens[tokens.Length - 1], normalizer, validator);
 
             // Keep track of number of opening and closing parentheses.
             int numOpeningParentheses = 0, numClosingParentheses = 0;
+
+            // A list of normalized variables as they occur in the expression, without duplicates.
+            var normalizedVariables = new List<string>();
+
+            // The variables which have already been normalized and added to the variables list.
+            // Used for quick lookups.
+            var seenVariables = new HashSet<string>();
 
             // Keep track of the previous token seen
             string previousToken = null;
 
             // Check each token individually.
-            foreach(var token in expressionTokens)
+            foreach (var token in tokens)
             {
                 // Check tokens which follow opening parentheses or operators.
                 CheckFollowingOpeningParenthesesOperators(previousToken, token, normalizer, validator);
@@ -40,7 +64,7 @@ namespace SpreadsheetUtilities
                 // Check tokens which follow closing parentheses, numbers, or variables.
                 CheckFollowingClosingParenthesesNumbersVariables(previousToken, token, normalizer, validator);
 
-                // Check parentheses.
+                // Cases for specific token types.
                 if (OperatorUtils.IsOpeningGroupOperator(token))
                 {
                     // Increase the counter for opening parentheses.
@@ -56,6 +80,21 @@ namespace SpreadsheetUtilities
                         throw new FormulaFormatException(
                             "There are too many closing parentheses in the expression.");
                 }
+                else if (ExpressionUtils.IsVariable(token))
+                {
+                    // Normalize the variable.
+                    var normalizedVariable = normalizer(token);
+
+                    // Check that we have already seen this variable.
+                    if (!seenVariables.Contains(normalizedVariable))
+                    {
+                        // Mark the variable as seen.
+                        seenVariables.Add(normalizedVariable);
+
+                        // Add the variable to the list.
+                        normalizedVariables.Add(normalizedVariable);
+                    }
+                }
 
                 previousToken = token;
             }
@@ -64,6 +103,9 @@ namespace SpreadsheetUtilities
             if (numOpeningParentheses != numClosingParentheses)
                 throw new FormulaFormatException(
                     "Parentheses are unbalanced; the number of opening parentheses does not match the number of closing parentheses.");
+
+            // Return the tokens and normalized variables.
+            return new Tuple<string[], string[]>(tokens, normalizedVariables.ToArray());
         }
 
         /// <summary>

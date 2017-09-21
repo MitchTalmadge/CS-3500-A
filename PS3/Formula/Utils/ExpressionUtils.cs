@@ -44,40 +44,6 @@ namespace SpreadsheetUtilities.Utils
         }
 
         /// <summary>
-        /// From the provided tokens, identifies and normalizes all variables, ignoring duplicates.
-        /// Provides each variable in an enumerator in order of occurence.
-        /// </summary>
-        /// <param name="tokens">The tokens for the expression.</param>
-        /// <param name="normalizer">The normalizer to use.</param>
-        /// <returns>An enumerator that provides normalized variables in order of occurence without duplicates.</returns>
-        internal static IEnumerable<string> GetNormalizedVariables(string[] tokens, Normalizer normalizer)
-        {
-            // The variables which have already been seen and returned, to prevent duplicate returns.
-            var seenVariables = new HashSet<string>();
-
-            // Iterate over each token in the expression.
-            foreach (var token in tokens)
-            {
-                // Only handle tokens which are variables.
-                if (!IsVariable(token))
-                    continue;
-
-                // Normalize the token.
-                var normalizedToken = normalizer(token);
-
-                // Check that we have already seen this token.
-                if (seenVariables.Contains(normalizedToken))
-                    continue;
-
-                // Mark the token as seen.
-                seenVariables.Add(normalizedToken);
-
-                // Return the token.
-                yield return normalizedToken;
-            }
-        }
-
-        /// <summary>
         /// Determines if the given token has the syntax of a variable.
         /// </summary>
         /// <param name="token">The token to check.</param>
