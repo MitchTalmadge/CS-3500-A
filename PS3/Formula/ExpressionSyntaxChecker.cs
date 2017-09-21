@@ -14,25 +14,16 @@ namespace SpreadsheetUtilities
         /// Ensures that the provided expression can be evaluated without error.
         /// Throws a FormulaFormatException if there are any problems.
         /// </summary>
-        /// <param name="expression">The expression to check.</param>
+        /// <param name="expressionTokens">The individual tokens of the expression to check.</param>
         /// <param name="normalizer">The variable normalizer.</param>
         /// <param name="validator">The variable validator.</param>
-        internal static void CheckSyntax(string expression, Normalizer normalizer, Validator validator)
+        internal static void CheckSyntax(string[] expressionTokens, Normalizer normalizer, Validator validator)
         {
-            // Check for null or empty formulas.
-            if (expression == null)
-                throw new FormulaFormatException("The expression is null and cannot be parsed.");
-            if (expression.Trim() == "")
-                throw new FormulaFormatException("The expression is empty and cannot be parsed.");
+            // Check the first token for syntax errors.
+            CheckFirstToken(expressionTokens[0], normalizer, validator);
 
-            // Get an enumerator for all the tokens in the formula.
-            var tokens = ExpressionUtils.GetTokens(expression).GetEnumerator();
-
-            // Get the first token out and ensure it is legal.
-            // The first token must be either an opening parenthesis, a number, or a variable.
-            tokens.MoveNext();
-            var token = tokens.Current;
-            CheckFirstToken(token, normalizer, validator);
+            // Check the final token for syntax errors.
+            CheckFinalToken(expressionTokens[expressionTokens.Length - 1], normalizer, validator);
 
             // Keep track of number of opening and closing parentheses.
             int numOpeningParentheses = 0, numClosingParentheses = 0;
@@ -40,11 +31,9 @@ namespace SpreadsheetUtilities
             // Keep track of the previous token seen
             string previousToken = null;
 
-            // Iterate over each token in the enumerator.
-            do
+            // Check each token individually.
+            foreach(var token in expressionTokens)
             {
-                token = tokens.Current;
-
                 // Check tokens which follow opening parentheses or operators.
                 CheckFollowingOpeningParenthesesOperators(previousToken, token, normalizer, validator);
 
@@ -69,12 +58,7 @@ namespace SpreadsheetUtilities
                 }
 
                 previousToken = token;
-            } while (tokens.MoveNext());
-            // Dispose of tokens enumerator.
-            tokens.Dispose();
-
-            // Check the final token.
-            CheckFinalToken(token, normalizer, validator);
+            }
 
             // Make sure the parentheses are balanced (opening == closed)
             if (numOpeningParentheses != numClosingParentheses)

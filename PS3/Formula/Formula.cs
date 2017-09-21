@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using SpreadsheetUtilities.Utils;
 
@@ -48,6 +49,11 @@ namespace SpreadsheetUtilities
         /// The expression, guaranteed to be syntactically correct.
         /// </summary>
         private readonly string _expression;
+
+        /// <summary>
+        /// All tokens in the expression.
+        /// </summary>
+        private readonly string[] _tokens;
 
         /// <summary>
         /// The variable normalizer function.
@@ -91,12 +97,19 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String expression, Func<string, string> normalizer, Func<string, bool> validator)
         {
+            // Check for null or empty expressions.
+            if (expression == null)
+                throw new FormulaFormatException("The expression is null and cannot be parsed.");
+            if (expression.Trim() == "")
+                throw new FormulaFormatException("The expression is empty and cannot be parsed.");
+
             // Set instance properties.
             _expression = expression;
+            _tokens = ExpressionUtils.GetTokens(expression).ToArray();
             _normalizer = normalizer;
 
             // Check the syntax of the expression to ensure it can be properly evaluated.
-            ExpressionSyntaxChecker.CheckSyntax(expression, normalizer, validator);
+            ExpressionSyntaxChecker.CheckSyntax(_tokens, normalizer, validator);
         }
 
         /// <summary>
@@ -122,7 +135,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return Evaluator.Evaluate(_expression, _normalizer, lookup);
+            return Evaluator.Evaluate(_tokens, _normalizer, lookup);
         }
 
         /// <summary>
@@ -142,7 +155,7 @@ namespace SpreadsheetUtilities
             var seenVariables = new HashSet<string>();
 
             // Iterate over each token in the expression.
-            foreach (var token in ExpressionUtils.GetTokens(_expression))
+            foreach (var token in _tokens)
             {
                 // Only handle tokens which are variables.
                 if (!ExpressionUtils.IsVariable(token))
@@ -179,7 +192,7 @@ namespace SpreadsheetUtilities
             var stringBuilder = new StringBuilder();
 
             // Iterate over each token in the formula.
-            foreach (var token in ExpressionUtils.GetTokens(_expression))
+            foreach (var token in _tokens)
             {
                 // Check for Arithmetic Operators, which are given extra spacing.
                 if (OperatorUtils.IsArithmeticOperator(token))

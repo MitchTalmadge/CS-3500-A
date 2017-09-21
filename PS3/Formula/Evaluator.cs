@@ -13,10 +13,9 @@ namespace SpreadsheetUtilities
     internal class Evaluator
     {
         /// <summary>
-        /// Evaluates this Formula, using the lookup delegate to determine the values of
+        /// Evaluates an expression, using the lookup delegate to determine the values of
         /// variables.  When a variable symbol v needs to be determined, it should be looked up
-        /// via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
-        /// the constructor.)
+        /// via lookup(normalize(v)). 
         /// 
         /// For example, if L("x") is 2, L("X") is 4, and N is a method that converts all the letters 
         /// in a string to upper case:
@@ -28,16 +27,13 @@ namespace SpreadsheetUtilities
         /// (if it has one) or throws an ArgumentException (otherwise).
         /// 
         /// If no undefined variables or divisions by zero are encountered when evaluating 
-        /// this Formula, the value is returned.  Otherwise, a FormulaError is returned.  
+        /// this expression, the value is returned.  Otherwise, a FormulaError is returned.  
         /// The Reason property of the FormulaError should have a meaningful explanation.
         ///
         /// This method should never throw an exception.
         /// </summary>
-        public static object Evaluate(string expression, Func<string, string> normalizer, Func<string, double> lookup)
+        public static object Evaluate(string[] expressionTokens, Func<string, string> normalizer, Func<string, double> lookup)
         {
-            // Split the expression up into individual tokens.
-            var tokens = ExpressionUtils.GetTokens(expression);
-
             // The value stack contains the actual integer values to perform operations on.
             var valueStack = new Stack<double>();
 
@@ -48,7 +44,7 @@ namespace SpreadsheetUtilities
             try
             {
                 // Iterate over each token to determine its type and how it should be handled.
-                foreach (var token in tokens)
+                foreach (var token in expressionTokens)
                 {
                     // Try to get the token as an Operator.
                     if (OperatorUtils.OperatorDict.TryGetValue(token, out var currentOperator))
