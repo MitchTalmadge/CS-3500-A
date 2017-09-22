@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Evaluator.cs" />
+    <Compile Include="ExpressionEvaluator.cs" />
     <Compile Include="ExpressionSyntaxChecker.cs" />
     <Compile Include="Formula.cs" />
     <Compile Include="Operators\Arithmetic\AdditionArithmeticOperator.cs" />

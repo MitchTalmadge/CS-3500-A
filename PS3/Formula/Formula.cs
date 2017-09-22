@@ -129,7 +129,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return Evaluator.Evaluate(_tokens, _normalizer, lookup);
+            return ExpressionEvaluator.Evaluate(_tokens, _normalizer, lookup);
         }
 
         /// <summary>

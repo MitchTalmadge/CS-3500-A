@@ -13,6 +13,32 @@ namespace FormulaTester
     public class FormulaTests
     {
         /// <summary>
+        /// Tests the ability to create multiple formula instances without collisions.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestInstanceCollisions()
+        {
+            var f1 = new Formula("AB + 5");
+            var f2 = new Formula("abc_ + 10");
+
+            // Check initial values.
+            Assert.AreEqual(7d, f1.Evaluate(s => s.Length));
+            Assert.AreEqual(14d, f2.Evaluate(s => s.Length));
+
+            // Check once more just in case.
+            Assert.AreEqual(7d, f1.Evaluate(s => s.Length));
+            Assert.AreEqual(14d, f2.Evaluate(s => s.Length));
+
+            // Check variables.
+            CollectionAssert.AreEqual(new[]{"AB"}, f1.GetVariables().ToArray());
+            CollectionAssert.AreEqual(new[]{"abc_"}, f2.GetVariables().ToArray());
+
+            // Once again, check just in case.
+            CollectionAssert.AreEqual(new[] { "AB" }, f1.GetVariables().ToArray());
+            CollectionAssert.AreEqual(new[] { "abc_" }, f2.GetVariables().ToArray());
+        }
+
+        /// <summary>
         /// Tests the syntax rule that floating point numbers are acceptable.
         /// </summary>
         [TestMethod]
@@ -21,6 +47,17 @@ namespace FormulaTester
             // Shouldn't throw
             Assert.IsNotNull(new Formula("10.5 + 5"));
             Assert.IsNotNull(new Formula("11.123456 - 1.23445 * (150.3984 / 1082.43434)"));
+        }
+
+        /// <summary>
+        /// Tests the syntax rule that floating point numbers (in scientific notation) are acceptable.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestSyntaxFloatingPointNumbersScientific()
+        {
+            // Shouldn't throw
+            Assert.IsNotNull(new Formula("1.05E1 + 5"));
+            Assert.IsNotNull(new Formula("1.24E20 - 1.5E9 * (1.09E6 / 0.000924E4)"));
         }
 
         /// <summary>
@@ -260,6 +297,18 @@ namespace FormulaTester
         }
 
         /// <summary>
+        /// Tests expressions which contain scientific notation.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestEvaluateScientificNotation()
+        {
+            Assert.AreEqual(15.5d, new Formula("1.05E1 + 5").Evaluate(s => s.Length));
+            Assert.AreEqual(5.5d, new Formula("0.1075E2 - 0.00525E3").Evaluate(s => s.Length));
+            Assert.AreEqual(100d, new Formula("10.0E0 * 1.0E1").Evaluate(s => s.Length));
+            Assert.AreEqual(50d, new Formula("1.0E2 / 0.0002E4").Evaluate(s => s.Length));
+        }
+
+        /// <summary>
         /// Tests expressions which may evaluate incorrectly if the order of operations are not correct.
         /// </summary>
         [TestMethod]
@@ -370,6 +419,18 @@ namespace FormulaTester
         }
 
         /// <summary>
+        /// Tests a discovered issue wherein scientific notation is incorrectly marked as a variable instead of a number.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestScientificNotationIsNotMarkedAsVariable()
+        {
+            // Scientific Notation should not be recognized as variables
+            CollectionAssert.AreEqual(new[] { "abc" }, new Formula("abc + 10.1E2").GetVariables().ToList());
+            CollectionAssert.AreEqual(new[] { "abc" }, new Formula("10.2E4 + abc").GetVariables().ToList());
+            CollectionAssert.AreEqual(new string[] {}, new Formula("10.9E5 + 46.4E3").GetVariables().ToList());
+        }
+
+        /// <summary>
         /// Tests that ToString works correctly.
         /// </summary>
         [TestMethod]
@@ -419,7 +480,7 @@ namespace FormulaTester
         [TestMethod]
         public void PublicTestEquality()
         {
-            // Idential expressions
+            // Identical expressions
             Assert.IsTrue(new Formula("10+5").Equals(new Formula("10+5")));
             Assert.AreEqual(new Formula("10+5").GetHashCode(), new Formula("10+5").GetHashCode());
             Assert.IsTrue(new Formula("10+5") == new Formula("10+5"));
@@ -447,10 +508,22 @@ namespace FormulaTester
         }
 
         /// <summary>
+        /// Tests formulas which are not equal to each other.
+        /// </summary>
+        [TestMethod]
+        public void PublicTestAreNotEqual()
+        {
+            Assert.IsFalse(new Formula("10+5").Equals(new Formula("10+10")));
+            Assert.AreNotEqual(new Formula("10+5").GetHashCode(), new Formula("10+10").GetHashCode());
+            Assert.IsFalse(new Formula("10+5") == new Formula("10+10"));
+            Assert.IsTrue(new Formula("10+5") != new Formula("10+10"));
+        }
+
+        /// <summary>
         /// Tests passing null or non-formula objects into the equality methods.
         /// </summary>
         [TestMethod]
-        public void PublicTestNullAndIncorrectEquals()
+        public void PublicTestNullAndNonFormulaEquals()
         {
             Assert.IsFalse(new Formula("10 + 5").Equals(null));
             Assert.IsFalse(new Formula("10 + 5") == null);
@@ -465,7 +538,7 @@ namespace FormulaTester
         /// Tests the FormulaError class' ability to store errors.
         /// </summary>
         [TestMethod]
-        public void PublicTestFormulaError()
+        public void PublicTestFormulaErrorCanStoreErrors()
         {
             var error = new FormulaError("oh no");
             Assert.AreEqual("oh no", error.Reason);         

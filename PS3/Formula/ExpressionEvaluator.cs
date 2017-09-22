@@ -7,10 +7,10 @@ using SpreadsheetUtilities.Utils;
 namespace SpreadsheetUtilities
 {
     /// <summary>
-    /// Used for evaluation of expressions parsed by the Formula class.
+    /// Used for evaluation of Formula expressions.
     /// </summary>
     /// <author>Mitch Talmadge, u1031378</author>
-    internal class Evaluator
+    internal class ExpressionEvaluator
     {
         /// <summary>
         /// Evaluates an expression, using the lookup delegate to determine the values of

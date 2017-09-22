@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
 using Normalizer = System.Func<string, string>;
 using Validator = System.Func<string, bool>;
 
@@ -20,17 +19,17 @@ namespace SpreadsheetUtilities.Utils
         /// </summary>
         internal static IEnumerable<string> GetTokens(string expression)
         {
-            // Patterns for individual tokens
-            var lpPattern = @"\(";
-            var rpPattern = @"\)";
-            var opPattern = @"[\+\-*/]";
-            var varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
-            var doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
-            var spacePattern = @"\s+";
+            // Pattern constants
+            const string leftParenthesisPattern = @"\(";
+            const string rightParenthesisPattern = @"\)";
+            const string operatorPattern = @"[\+\-*/]";
+            const string variablePattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+            const string doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
+            const string spacePattern = @"\s+";
 
             // Overall pattern
             var pattern =
-                $"({lpPattern}) | ({rpPattern}) | ({opPattern}) | ({varPattern}) | ({doublePattern}) | ({spacePattern})";
+                $"({leftParenthesisPattern}) | ({rightParenthesisPattern}) | ({operatorPattern}) | ({variablePattern}) | ({doublePattern}) | ({spacePattern})";
 
             // Enumerate matching tokens that don't consist solely of white space.
             foreach (var token in Regex.Split(expression, pattern, RegexOptions.IgnorePatternWhitespace))
@@ -50,8 +49,8 @@ namespace SpreadsheetUtilities.Utils
         /// <returns>True if the token is a variable, false otherwise.</returns>
         internal static bool IsVariable(string token)
         {
-            const string pattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
-            return Regex.IsMatch(token, pattern);
+            const string variablePattern = @"^[a-zA-Z_](?: [a-zA-Z_]|\d)*$";
+            return Regex.IsMatch(token, variablePattern, RegexOptions.IgnorePatternWhitespace);
         }
 
         /// <summary>
@@ -65,6 +64,5 @@ namespace SpreadsheetUtilities.Utils
         {
             return IsVariable(token) && validator(normalizer(token));
         }
-
     }
 }
