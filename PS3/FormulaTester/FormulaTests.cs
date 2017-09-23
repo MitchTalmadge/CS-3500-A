@@ -306,6 +306,7 @@ namespace FormulaTester
             Assert.AreEqual(5.5d, new Formula("0.1075E2 - 0.00525E3").Evaluate(s => s.Length));
             Assert.AreEqual(100d, new Formula("10.0E0 * 1.0E1").Evaluate(s => s.Length));
             Assert.AreEqual(50d, new Formula("1.0E2 / 0.0002E4").Evaluate(s => s.Length));
+            Assert.AreEqual(3.5E-4, new Formula("3.5E-4").Evaluate(s => s.Length));
         }
 
         /// <summary>
