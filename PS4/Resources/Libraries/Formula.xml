@@ -1,0 +1,508 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Formula</name>
+    </assembly>
+    <members>
+        <member name="T:SpreadsheetUtilities.ExpressionEvaluator">
+            <summary>
+            Used for evaluation of Formula expressions.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.Evaluate(System.String[],System.Func{System.String,System.String},System.Func{System.String,System.Double})">
+             <summary>
+             Evaluates an expression, using the lookup delegate to determine the values of
+             variables.  When a variable symbol v needs to be determined, it should be looked up
+             via lookup(normalize(v)). 
+             
+             For example, if L("x") is 2, L("X") is 4, and N is a method that converts all the letters 
+             in a string to upper case:
+             
+             new Formula("x+7", N, s => true).Evaluate(L) is 11
+             new Formula("x+7").Evaluate(L) is 9
+             
+             Given a variable symbol as its parameter, lookup returns the variable's value 
+             (if it has one) or throws an ArgumentException (otherwise).
+             
+             If no undefined variables or divisions by zero are encountered when evaluating 
+             this expression, the value is returned.  Otherwise, a FormulaError is returned.  
+             The Reason property of the FormulaError should have a meaningful explanation.
+            
+             This method should never throw an exception.
+             </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.AddValueToStack(System.Double,System.Collections.Generic.Stack{System.Double},System.Collections.Generic.Stack{SpreadsheetUtilities.Operators.Operator})">
+            <summary>
+            Adds a new value to the top of the valueStack, and performs any needed computations.
+            </summary>
+            <param name="value">The value to add to the stack.</param>
+            <param name="valueStack">The stack to add the value to.</param>
+            <param name="operatorStack">The operator stack, used for computation of high-level arithmetic when required.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.CloseGroup(System.Collections.Generic.Stack{System.Double},System.Collections.Generic.Stack{SpreadsheetUtilities.Operators.Operator})">
+            <summary>
+            Performs the required operations on the value and operator stacks when an expression group is closed.
+            </summary>
+            <param name="valueStack">The stack containing integer values.</param>
+            <param name="operatorStack">The stack containing the Operators to perform on the values.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.ComputeTopOperatorWithTopValues(System.Collections.Generic.Stack{System.Double},System.Collections.Generic.Stack{SpreadsheetUtilities.Operators.Operator})">
+            <summary>
+            Computes the value when the Operator at the top of the operatorStack is applied to the two top-most values in the valueStack.
+            Stores the computed value at the top of the valueStack.
+            
+            The Operator at the top of the operatorStack should be an Arithmetic Operator.
+            </summary>
+            <param name="valueStack">The stack containing at least two values.</param>
+            <param name="operatorStack">The stack containing an Arithmetic Operator at the top.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.IsArithmeticAtTop(System.Collections.Generic.Stack{SpreadsheetUtilities.Operators.Operator},System.Boolean,System.Boolean)">
+            <summary>
+            Determines if the Operator at the top of the operatorStack is an Arithmetic Operator,
+            and optionally, if it is high or low level.
+            
+            (Note: if both highLevel and lowLevel are true, highLevel takes prescendence.)
+            </summary>
+            <param name="operatorStack">The Operator stack.</param>
+            <param name="highLevel">Set to true to require that the Operator is high level.</param>
+            <param name="lowLevel">Set to true to require that the Operator is low level.</param>
+            <returns>True if the Operator at the top matches, false otherwise.</returns>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionEvaluator.PopTwoValues(System.Collections.Generic.Stack{System.Double})">
+            <summary>
+            Pops two values from the top of the value stack and returns them in a Tuple.
+            The first value popped is item1, and the second is item2.
+            </summary>
+            <param name="valueStack">The stack containing at least two values.</param>
+            <returns>A Tuple containing the two values popped.</returns>
+        </member>
+        <member name="T:SpreadsheetUtilities.EvaluationException">
+            <inheritdoc />
+            <summary>
+            This exception is used as a convenient way to propagate a FormulaError up through the helper methods of the Evaluator class.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="P:SpreadsheetUtilities.EvaluationException.Error">
+            <summary>
+            The error belonging to this exception.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.EvaluationException.#ctor(SpreadsheetUtilities.FormulaError)">
+            <inheritdoc />
+            <summary>
+            Constructs an EvaluationException with the given FormulaError.
+            </summary>
+            <param name="error">The error to store in this exception.</param>
+        </member>
+        <member name="T:SpreadsheetUtilities.ExpressionSyntaxChecker">
+            <summary>
+            Used for checking the syntax of expressions.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionSyntaxChecker.CheckSyntax(System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Ensures that the provided expression can be evaluated without error.
+            Throws a FormulaFormatException if there are any problems.
+            </summary>
+            <param name="expression">The expression to check.</param>
+            <param name="normalizer">The variable normalizer.</param>
+            <param name="validator">The variable validator.</param>
+            <returns>
+            A Tuple containing: 
+            <list type="number">
+                <item>
+                    An array of the individual tokens of the expression
+                </item>
+                <item>
+                    An array of the normalized variables without duplicates, in order of occurence.
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionSyntaxChecker.CheckFirstToken(System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Ensures that the final token of an expression is an opening parenthesis, a number, or a variable.
+            Throws if not legal.
+            </summary>
+            <param name="token">The final token of the expression.</param>
+            <param name="normalizer">The normalizer.</param>
+            <param name="validator">The validator.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionSyntaxChecker.CheckFinalToken(System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Ensures that the final token of an expression is a closing parenthesis, a number, or a variable.
+            Throws if not legal.
+            </summary>
+            <param name="token">The final token of the expression.</param>
+            <param name="normalizer">The normalizer.</param>
+            <param name="validator">The validator.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionSyntaxChecker.CheckFollowingOpeningParenthesesOperators(System.String,System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Ensures that any token immediately following an opening parenthesis or operator
+            is either another opening parenthesis, a number, or a variable.
+            </summary>
+            <param name="previousToken">The previous token iterated over. Null if this is the first.</param>
+            <param name="currentToken">The current token being checked.</param>
+            <param name="normalizer">The normalizer.</param>
+            <param name="validator">The validator.</param>
+        </member>
+        <member name="M:SpreadsheetUtilities.ExpressionSyntaxChecker.CheckFollowingClosingParenthesesNumbersVariables(System.String,System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Ensures that any token immediately following a closing parenthesis, number, or variable
+            is either another closing parenthesis or an operator.
+            </summary>
+            <param name="previousToken">The previous token iterated over. Null if this is the first.</param>
+            <param name="currentToken">The current token being checked.</param>
+            <param name="normalizer">The normalizer.</param>
+            <param name="validator">The validator.</param>
+        </member>
+        <member name="T:SpreadsheetUtilities.Formula">
+            <summary>
+            Represents formulas written in standard infix notation using standard precedence
+            rules.  The allowed symbols are non-negative numbers written using double-precision 
+            floating-point syntax; variables that consist of a letter or underscore followed by 
+            zero or more letters, underscores, or digits; parentheses; and the four operator 
+            symbols +, -, *, and /.  
+            
+            Spaces are significant only insofar that they delimit tokens.  For example, "xy" is
+            a single variable, "x y" consists of two variables "x" and y; "x23" is a single variable; 
+            and "x 23" consists of a variable "x" and a number "23".
+            
+            Associated with every formula are two delegates:  a normalizer and a validator.  The
+            normalizer is used to convert variables into a canonical form, and the validator is used
+            to add extra restrictions on the validity of a variable (beyond the standard requirement 
+            that it consist of a letter or underscore followed by zero or more letters, underscores,
+            or digits.)  Their use is described in detail in the constructor and method comments.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="F:SpreadsheetUtilities.Formula._tokens">
+            <summary>
+            All tokens in the expression.
+            </summary>
+        </member>
+        <member name="F:SpreadsheetUtilities.Formula._variables">
+            <summary>
+            All normalized variables in order of occurrence, with no duplicates.
+            </summary>
+        </member>
+        <member name="F:SpreadsheetUtilities.Formula._normalizer">
+            <summary>
+            The variable normalizer function.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.#ctor(System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Creates a Formula from a string that consists of an infix expression written as
+            described in the class comment.  If the expression is syntactically incorrect,
+            throws a FormulaFormatException with an explanatory Message.
+            
+            The associated normalizer and validator are the second and third parameters,
+            respectively.  
+            
+            If the formula contains a variable v such that normalize(v) is not a legal variable, 
+            throws a FormulaFormatException with an explanatory message. 
+            
+            If the formula contains a variable v such that isValid(normalize(v)) is false,
+            throws a FormulaFormatException with an explanatory message.
+            
+            Suppose that N is a method that converts all the letters in a string to upper case, and
+            that V is a method that returns true only if a string consists of one letter followed
+            by one digit.  Then:
+            
+            new Formula("x2+y3", N, V) should succeed
+            new Formula("x+y3", N, V) should throw an exception, since V(N("x")) is false
+            new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.#ctor(System.String)">
+            <summary>
+            Creates a Formula from a string that consists of an infix expression written as
+            described in the class comment.  If the expression is syntactically invalid,
+            throws a FormulaFormatException with an explanatory Message.
+            
+            The associated normalizer is the identity function, and the associated validator
+            maps every string to true.  
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.Evaluate(System.Func{System.String,System.Double})">
+             <summary>
+             Evaluates this Formula, using the lookup delegate to determine the values of
+             variables.  When a variable symbol v needs to be determined, it should be looked up
+             via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
+             the constructor.)
+             
+             For example, if L("x") is 2, L("X") is 4, and N is a method that converts all the letters 
+             in a string to upper case:
+             
+             new Formula("x+7", N, s => true).Evaluate(L) is 11
+             new Formula("x+7").Evaluate(L) is 9
+             
+             Given a variable symbol as its parameter, lookup returns the variable's value 
+             (if it has one) or throws an ArgumentException (otherwise).
+             
+             If no undefined variables or divisions by zero are encountered when evaluating 
+             this Formula, the value is returned.  Otherwise, a FormulaError is returned.  
+             The Reason property of the FormulaError should have a meaningful explanation.
+            
+             This method should never throw an exception.
+             </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.GetVariables">
+            <summary>
+            Enumerates the normalized versions of all of the variables that occur in this 
+            formula.  No normalization may appear more than once in the enumeration, even 
+            if it appears more than once in this Formula.
+            
+            For example, if N is a method that converts all the letters in a string to upper case:
+            
+            new Formula("x+y*z", N, s => true).GetVariables() should enumerate "X", "Y", and "Z"
+            new Formula("x+X*z", N, s => true).GetVariables() should enumerate "X" and "Z".
+            new Formula("x+X*z").GetVariables() should enumerate "x", "X", and "z".
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.ToString">
+            <summary>
+            Returns a string containing no spaces which, if passed to the Formula
+            constructor, will produce a Formula f such that this.Equals(f).  All of the
+            variables in the string should be normalized.
+            
+            For example, if N is a method that converts all the letters in a string to upper case:
+            
+            new Formula("x + y", N, s => true).ToString() should return "X+Y"
+            new Formula("x + Y").ToString() should return "x+Y"
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.Equals(System.Object)">
+            <summary>
+            If obj is null or obj is not a Formula, returns false.  Otherwise, reports
+            whether or not this Formula and obj are equal.
+            
+            Two Formulae are considered equal if they consist of the same tokens in the
+            same order.  To determine token equality, all tokens are compared as strings 
+            except for numeric tokens and variable tokens.
+            Numeric tokens are considered equal if they are equal after being "normalized" 
+            by C#'s standard conversion from string to double, then back to string. This 
+            eliminates any inconsistencies due to limited floating point precision.
+            Variable tokens are considered equal if their normalized forms are equal, as 
+            defined by the provided normalizer.
+            
+            For example, if N is a method that converts all the letters in a string to upper case:
+             
+            new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")) is true
+            new Formula("x1+y2").Equals(new Formula("X1+Y2")) is false
+            new Formula("x1+y2").Equals(new Formula("y2+x1")) is false
+            new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.op_Equality(SpreadsheetUtilities.Formula,SpreadsheetUtilities.Formula)">
+            <summary>
+            Reports whether f1 == f2, using the notion of equality from the Equals method.
+            Note that if both f1 and f2 are null, this method should return true.  If one is
+            null and one is not, this method should return false.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.op_Inequality(SpreadsheetUtilities.Formula,SpreadsheetUtilities.Formula)">
+            <summary>
+            Reports whether f1 != f2, using the notion of equality from the Equals method.
+            Note that if both f1 and f2 are null, this method should return false.  If one is
+            null and one is not, this method should return true.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Formula.GetHashCode">
+            <summary>
+            Returns a hash code for this Formula.  If f1.Equals(f2), then it must be the
+            case that f1.GetHashCode() == f2.GetHashCode().  Ideally, the probability that two 
+            randomly-generated unequal Formulae have the same hash code should be extremely small.
+            </summary>
+        </member>
+        <member name="T:SpreadsheetUtilities.FormulaFormatException">
+            <inheritdoc />
+            <summary>
+            Used to report syntactic errors in the argument to the Formula constructor.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.FormulaFormatException.#ctor(System.String)">
+            <inheritdoc />
+            <summary>
+            Constructs a FormulaFormatException containing the explanatory message.
+            </summary>
+        </member>
+        <member name="T:SpreadsheetUtilities.FormulaError">
+            <summary>
+            Used as a possible return value of the Formula.Evaluate method.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.FormulaError.#ctor(System.String)">
+            <summary>
+            Constructs a FormulaError containing the explanatory reason.
+            </summary>
+            <param name="reason">The reason for the error.</param>
+        </member>
+        <member name="P:SpreadsheetUtilities.FormulaError.Reason">
+            <summary>
+             The reason why this FormulaError was created.
+            </summary>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Arithmetic.AdditionArithmeticOperator">
+            <inheritdoc />
+            <summary>
+                An Arithmetic Operator that performs addition.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Arithmetic.ArithmeticOperator">
+            <inheritdoc />
+            <summary>
+                The Arithmetic Operator represents an Operator that performs arithmetic, such as addition, subtraction, etc.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="M:SpreadsheetUtilities.Operators.Arithmetic.ArithmeticOperator.#ctor(System.Boolean)">
+            <inheritdoc />
+            <summary>
+                Constructs an Arithmetic Operator with the given token,
+            </summary>
+            <param name="highLevel">
+                Whether or not this Arithmetic Operator is high-level,
+                meaning that it should be computed before other operators.
+            </param>
+        </member>
+        <member name="P:SpreadsheetUtilities.Operators.Arithmetic.ArithmeticOperator.HighLevel">
+            <summary>
+                Determines if this Arithmetic Operator is considered "high-level",
+                or in other words, should be computed before other operators.
+            </summary>
+        </member>
+        <member name="P:SpreadsheetUtilities.Operators.Arithmetic.ArithmeticOperator.LowLevel">
+            <summary>
+                Determines if this Arithmetic Operator is considered "low-level",
+                or in other words, will be computed last; after other high-level operators.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Operators.Arithmetic.ArithmeticOperator.Compute(System.Double,System.Double)">
+            <summary>
+                Computes the result of applying this operation between the left and right parameters.
+                For example, if the operator is "add": left + right = result
+            </summary>
+            <param name="left">The left value.</param>
+            <param name="right">The right value.</param>
+            <returns>The computed value.</returns>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Arithmetic.DivisionArithmeticOperator">
+            <inheritdoc />
+            <summary>
+                An Arithmetic Operator that performs division.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Arithmetic.MultiplicationArithmeticOperator">
+            <inheritdoc />
+            <summary>
+                An Arithmetic Operator that performs multiplication.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Arithmetic.SubtractionArithmeticOperator">
+            <inheritdoc />
+            <summary>
+                An Arithmetic Operator that performs subtraction.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.GroupingOperator">
+            <inheritdoc />
+            <summary>
+                Grouping Operators are used to "group" parts of expressions together. Most commonly, they would be parentheses.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="M:SpreadsheetUtilities.Operators.GroupingOperator.#ctor(System.Boolean)">
+            <summary>
+                Constructs a Grouping Operator.
+            </summary>
+            <param name="closeGroup">
+                Whether this operator closes the group.
+                Defaults to false, meaning that this operator opens the group.
+            </param>
+        </member>
+        <member name="P:SpreadsheetUtilities.Operators.GroupingOperator.OpensGroup">
+            <summary>
+                Determines if this is the left brace, which opens the group.
+            </summary>
+        </member>
+        <member name="T:SpreadsheetUtilities.Operators.Operator">
+            <summary>
+                Represents an operator in an expression as accepted by the Evaluator.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="T:SpreadsheetUtilities.Utils.ExpressionUtils">
+            <summary>
+            Provides helper / utility methods for parsing and evaluating expressions.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.ExpressionUtils.GetTokens(System.String)">
+            <summary>
+            Given an expression, enumerates the tokens that compose it.  Tokens are left paren;
+            right paren; one of the four operator symbols; a string consisting of a letter or underscore
+            followed by zero or more letters, digits, or underscores; a double literal; and anything that doesn't
+            match one of those patterns.  There are no empty tokens, and no token contains white space.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.ExpressionUtils.IsVariable(System.String)">
+            <summary>
+            Determines if the given token has the syntax of a variable.
+            </summary>
+            <param name="token">The token to check.</param>
+            <returns>True if the token is a variable, false otherwise.</returns>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.ExpressionUtils.IsValidVariable(System.String,System.Func{System.String,System.String},System.Func{System.String,System.Boolean})">
+            <summary>
+            Determines if the given token is a valid variable, both syntactically and literally.
+            </summary>
+            <param name="token">The token to check.</param>
+            <param name="normalizer">The variable normalizer.</param>
+            <param name="validator">The variable validator.</param>
+            <returns></returns>
+        </member>
+        <member name="T:SpreadsheetUtilities.Utils.OperatorUtils">
+            <summary>
+                Provides helper / utility methods for working with Operator instances.
+            </summary>
+            <author>Mitch Talmadge, u1031378</author>
+        </member>
+        <member name="F:SpreadsheetUtilities.Utils.OperatorUtils.OperatorDict">
+            <summary>
+                Contains a mapping of tokens to Operator instances for use within expression evaluations.
+                Useful for logic which depends on a token being an operator.
+            </summary>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.OperatorUtils.IsOpeningGroupOperator(System.String)">
+            <summary>
+                Checks if a token is an opening Grouping Operator.
+            </summary>
+            <param name="token">The token to check.</param>
+            <returns>True if the token opens a group.</returns>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.OperatorUtils.IsClosingGroupOperator(System.String)">
+            <summary>
+                Checks if a token is a closing Grouping Operator.
+            </summary>
+            <param name="token">The token to check.</param>
+            <returns>True if the token closes a group.</returns>
+        </member>
+        <member name="M:SpreadsheetUtilities.Utils.OperatorUtils.IsArithmeticOperator(System.String)">
+            <summary>
+                Checks if a token is an Arithmetic Operator.
+            </summary>
+            <param name="token">The token to check.</param>
+            <returns>True if the token is an Arithmetic Operator.</returns>
+        </member>
+    </members>
+</doc>
