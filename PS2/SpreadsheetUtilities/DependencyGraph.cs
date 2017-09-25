@@ -1,4 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using IPairDict = System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<string>>;
+using PairDict = System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<string>>;
+
 
 namespace SpreadsheetUtilities
 {
@@ -30,9 +34,19 @@ namespace SpreadsheetUtilities
     public class DependencyGraph
     {
         /// <summary>
-        /// Contains the ordered pairs for the dependency graph.
+        /// Maps nodes to dependents.
         /// </summary>
-        private readonly DependencyContainer _dependencies = new DependencyContainer();
+        private readonly IPairDict _dependents = new PairDict();
+
+        /// <summary>
+        /// Maps nodes to dependees.
+        /// </summary>
+        private readonly IPairDict _dependees = new PairDict();
+
+        /// <summary>
+        /// The number of ordered pairs stored in this container.
+        /// </summary>
+        private int _count;
 
         /// <summary>
         /// Creates an empty DependencyGraph.
@@ -44,14 +58,14 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// The number of ordered pairs in the DependencyGraph.
         /// </summary>
-        public int Size => _dependencies.Count;
+        public int Size => _count;
 
         /// <summary>
         /// Obtains the number of dependees for the given node.
         /// </summary>
         /// <param name="node">The node.</param>
         /// <returns>The number of dependees belonging to the given node.</returns>
-        public int this[string node] => _dependencies.GetDependeesCount(node);
+        public int this[string node] => GetDependeesCount(node);
 
 
         /// <summary>
@@ -61,7 +75,7 @@ namespace SpreadsheetUtilities
         /// <returns>True if the node has dependents.</returns>
         public bool HasDependents(string node)
         {
-            return _dependencies.GetDependentsCount(node) > 0;
+            return GetDependentsCount(node) > 0;
         }
 
 
@@ -72,7 +86,7 @@ namespace SpreadsheetUtilities
         /// <returns>True if the node has dependees.</returns>
         public bool HasDependees(string node)
         {
-            return _dependencies.GetDependeesCount(node) > 0;
+            return GetDependeesCount(node) > 0;
         }
 
 
@@ -83,7 +97,18 @@ namespace SpreadsheetUtilities
         /// <returns>An enumerable collection of the node's dependents.</returns>
         public IEnumerable<string> GetDependents(string node)
         {
-            return _dependencies.GetDependents(node);
+            // Returns the contents of the dictionary at the given key as an array (to prevent modifications) if the key exists, or an empty array if it does not.
+            return _dependents.TryGetValue(node, out var dependents) ? dependents.ToArray() : new string[0];
+        }
+
+        /// <summary>
+        /// Gets the number of mapped dependents to a node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns>The count of dependents mapped.</returns>
+        private int GetDependentsCount(string node)
+        {
+            return _dependents.TryGetValue(node, out var dependents) ? dependents.Count : 0;
         }
 
         /// <summary>
@@ -93,7 +118,18 @@ namespace SpreadsheetUtilities
         /// <returns>An enumerable collection of the node's dependees.</returns>
         public IEnumerable<string> GetDependees(string node)
         {
-            return _dependencies.GetDependees(node);
+            // Returns the contents of the dictionary at the given key as an array (to prevent modifications) if the key exists, or an empty array if it does not.
+            return _dependees.TryGetValue(node, out var dependees) ? dependees.ToArray() : new string[0];
+        }
+
+        /// <summary>
+        /// Gets the number of mapped dependees to a node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns>The count of dependees mapped.</returns>
+        private int GetDependeesCount(string node)
+        {
+            return _dependees.TryGetValue(node, out var dependees) ? dependees.Count : 0;
         }
 
         /// <summary>
@@ -103,7 +139,17 @@ namespace SpreadsheetUtilities
         /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>       
         public void AddDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.AddPair(dependeeNode, dependentNode);
+            // Make sure the keys exist.
+            InitializeKey(dependeeNode, _dependents);
+            InitializeKey(dependentNode, _dependees);
+
+            // Create the relationships.
+            var added = _dependents[dependeeNode].Add(dependentNode);
+            added &= _dependees[dependentNode].Add(dependeeNode);
+
+            // Increase count if the pair was added (might not be added if it already exists).
+            if (added)
+                _count++;
         }
 
 
@@ -114,9 +160,55 @@ namespace SpreadsheetUtilities
         /// <param name="dependentNode">The dependent; i.e. the node that depends on the dependee.</param>   
         public void RemoveDependency(string dependeeNode, string dependentNode)
         {
-            _dependencies.RemovePair(dependeeNode, dependentNode);
+            // Check if there is a key; if true, remove from the set if the value exists.
+            var removed = false;
+            if (_dependents.TryGetValue(dependeeNode, out var dependents))
+                removed = dependents.Remove(dependentNode);
+            if (_dependees.TryGetValue(dependentNode, out var dependees))
+                removed &= dependees.Remove(dependeeNode);
+
+            // Decrease count if the pair was removed (might not be removed if it did not exist).
+            if (removed)
+                _count--;
         }
 
+        /// <summary>
+        /// Removes all dependents for a node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        private void RemoveDependents(string node)
+        {
+            if (!_dependents.TryGetValue(node, out var dependents)) return;
+
+            // Remove reverse side relationships
+            foreach (var dependent in dependents)
+                _dependees[dependent].Remove(node);
+
+            // Update count
+            _count -= dependents.Count;
+
+            // Clear the dependents set.
+            dependents.Clear();
+        }
+
+        /// <summary>
+        /// Removes all dependees for a node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        private void RemoveDependees(string node)
+        {
+            if (!_dependees.TryGetValue(node, out var dependees)) return;
+
+            // Remove reverse side relationships
+            foreach (var dependee in dependees)
+                _dependents[dependee].Remove(node);
+
+            // Update count
+            _count -= dependees.Count;
+
+            // Clear the dependees set.
+            dependees.Clear();
+        }
 
         /// <summary>
         /// Replaces all dependents for a given node with the ones provided.
@@ -125,9 +217,9 @@ namespace SpreadsheetUtilities
         /// <param name="newDependents">A collection containing the new dependents for the node.</param>
         public void ReplaceDependents(string node, IEnumerable<string> newDependents)
         {
-            _dependencies.RemoveDependents(node);
+            RemoveDependents(node);
             foreach (var dependent in newDependents)
-                _dependencies.AddPair(node, dependent);
+                AddDependency(node, dependent);
         }
 
 
@@ -138,9 +230,24 @@ namespace SpreadsheetUtilities
         /// <param name="newDependees">A collection containing the new dependees for the node.</param>
         public void ReplaceDependees(string node, IEnumerable<string> newDependees)
         {
-            _dependencies.RemoveDependees(node);
+            RemoveDependees(node);
             foreach (var dependee in newDependees)
-                _dependencies.AddPair(dependee, node);
+                AddDependency(dependee, node);
+        }
+
+        /// <summary>
+        /// Checks if the key exists in the given Dictionary, and if not, maps it to an empty set.
+        /// </summary>
+        /// <param name="key">The key to initialize.</param>
+        /// <param name="dict">The Dictionary to check for the key.</param>
+        private static void InitializeKey(string key, IPairDict dict)
+        {
+            // Check if the key exists.
+            if (dict.ContainsKey(key))
+                return; // Return if it does.
+
+            // Map the key to a new set.
+            dict[key] = new HashSet<string>();
         }
     }
 }
