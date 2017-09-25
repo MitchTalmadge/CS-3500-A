@@ -306,6 +306,7 @@ namespace FormulaTester
             Assert.AreEqual(5.5d, new Formula("0.1075E2 - 0.00525E3").Evaluate(s => s.Length));
             Assert.AreEqual(100d, new Formula("10.0E0 * 1.0E1").Evaluate(s => s.Length));
             Assert.AreEqual(50d, new Formula("1.0E2 / 0.0002E4").Evaluate(s => s.Length));
+            Assert.AreEqual(3.5E-4, new Formula("3.5E-4").Evaluate(s => s.Length));
         }
 
         /// <summary>
@@ -439,22 +440,22 @@ namespace FormulaTester
             // Default Normalizer
             Assert.AreEqual("10", new Formula("10").ToString());
             Assert.AreEqual("(10)", new Formula("(10)").ToString());
-            Assert.AreEqual("10 + 5", new Formula("10+5").ToString());
-            Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5").ToString());
-            Assert.AreEqual("Ab - ac", new Formula("Ab- ac").ToString());
-            Assert.AreEqual("(10 - 5) + 5 - AB * (_6c + c_d)", new Formula("(10-5)+5 - AB *(_6c +c_d)").ToString());
-            Assert.AreEqual("(10 - 5) + 5 - AB * (_6c + c_d)",
+            Assert.AreEqual("10+5", new Formula("10+5").ToString());
+            Assert.AreEqual("(10-5)+5", new Formula("(10-5)+5").ToString());
+            Assert.AreEqual("Ab-ac", new Formula("Ab- ac").ToString());
+            Assert.AreEqual("(10-5)+5-AB*(_6c+c_d)", new Formula("(10-5)+5 - AB *(_6c +c_d)").ToString());
+            Assert.AreEqual("(10-5)+5-AB*(_6c+c_d)",
                 new Formula("(10.00000000-5.0000000000000)+5.0000000 - AB *(_6c +c_d)").ToString());
 
             // Capital Normalizer
             Assert.AreEqual("10", new Formula("10", s => s.ToUpper(), s => true).ToString());
             Assert.AreEqual("(10)", new Formula("(10)", s => s.ToUpper(), s => true).ToString());
-            Assert.AreEqual("10 + 5", new Formula("10+5", s => s.ToUpper(), s => true).ToString());
-            Assert.AreEqual("(10 - 5) + 5", new Formula("(10-5)+5", s => s.ToUpper(), s => true).ToString());
-            Assert.AreEqual("AB - AC", new Formula("Ab- ac", s => s.ToUpper(), s => true).ToString());
-            Assert.AreEqual("(10 - 5) + 5 - AB * (_6C + C_D)",
+            Assert.AreEqual("10+5", new Formula("10+5", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10-5)+5", new Formula("(10-5)+5", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("AB-AC", new Formula("Ab- ac", s => s.ToUpper(), s => true).ToString());
+            Assert.AreEqual("(10-5)+5-AB*(_6C+C_D)",
                 new Formula("(10-5)+5 - AB *(_6c +c_d)", s => s.ToUpper(), s => true).ToString());
-            Assert.AreEqual("(10 - 5) + 5 - AB * (_6C + C_D)",
+            Assert.AreEqual("(10-5)+5-AB*(_6C+C_D)",
                 new Formula("(10.00000000-5.0000000000000)+5.0000000 - AB *(_6c +c_d)", s => s.ToUpper(), s => true)
                     .ToString());
         }

@@ -166,11 +166,8 @@ namespace SpreadsheetUtilities
             // Iterate over each token in the formula.
             foreach (var token in _tokens)
             {
-                // Check for Arithmetic Operators, which are given extra spacing.
-                if (OperatorUtils.IsArithmeticOperator(token))
-                    stringBuilder.Append(' ').Append(token).Append(' ');
                 // Check for variables, which need to be normalized.
-                else if (ExpressionUtils.IsVariable(token))
+                if (ExpressionUtils.IsVariable(token))
                     stringBuilder.Append(_normalizer(token));
                 // Check for numbers, which will be converted to double and back to eliminate duplicates (1.000 == 1)
                 else if (double.TryParse(token, out var number))
