@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.totalBillLabel = new System.Windows.Forms.Label();
-            this.calculateTipButton = new System.Windows.Forms.Button();
             this.totalBillTextBox = new System.Windows.Forms.TextBox();
             this.calculatedTipTextBox = new System.Windows.Forms.TextBox();
             this.tipPercentageTextBox = new System.Windows.Forms.TextBox();
@@ -48,22 +47,12 @@
             this.totalBillLabel.TabIndex = 0;
             this.totalBillLabel.Text = "Enter Total Bill:";
             // 
-            // calculateTipButton
-            // 
-            this.calculateTipButton.Location = new System.Drawing.Point(12, 288);
-            this.calculateTipButton.Name = "calculateTipButton";
-            this.calculateTipButton.Size = new System.Drawing.Size(153, 39);
-            this.calculateTipButton.TabIndex = 1;
-            this.calculateTipButton.Text = "Calculate Tip";
-            this.calculateTipButton.UseVisualStyleBackColor = true;
-            this.calculateTipButton.Click += new System.EventHandler(this.CalculateTipButton_Click);
-            // 
             // totalBillTextBox
             // 
             this.totalBillTextBox.Location = new System.Drawing.Point(271, 43);
             this.totalBillTextBox.Name = "totalBillTextBox";
             this.totalBillTextBox.Size = new System.Drawing.Size(105, 31);
-            this.totalBillTextBox.TabIndex = 2;
+            this.totalBillTextBox.TabIndex = 0;
             this.totalBillTextBox.Text = "10.50";
             this.totalBillTextBox.TextChanged += new System.EventHandler(this.TotalBillTextBox_TextChanged);
             // 
@@ -73,14 +62,14 @@
             this.calculatedTipTextBox.Name = "calculatedTipTextBox";
             this.calculatedTipTextBox.ReadOnly = true;
             this.calculatedTipTextBox.Size = new System.Drawing.Size(155, 31);
-            this.calculatedTipTextBox.TabIndex = 3;
+            this.calculatedTipTextBox.TabIndex = 2;
             // 
             // tipPercentageTextBox
             // 
             this.tipPercentageTextBox.Location = new System.Drawing.Point(310, 104);
             this.tipPercentageTextBox.Name = "tipPercentageTextBox";
             this.tipPercentageTextBox.Size = new System.Drawing.Size(66, 31);
-            this.tipPercentageTextBox.TabIndex = 5;
+            this.tipPercentageTextBox.TabIndex = 1;
             this.tipPercentageTextBox.Text = "20";
             this.tipPercentageTextBox.TextChanged += new System.EventHandler(this.TipPercentageTextBox_TextChanged);
             // 
@@ -117,13 +106,13 @@
             this.totalToPayTextBox.Name = "totalToPayTextBox";
             this.totalToPayTextBox.ReadOnly = true;
             this.totalToPayTextBox.Size = new System.Drawing.Size(155, 31);
-            this.totalToPayTextBox.TabIndex = 8;
+            this.totalToPayTextBox.TabIndex = 3;
             // 
             // TipCalculatorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(456, 339);
+            this.ClientSize = new System.Drawing.Size(456, 302);
             this.Controls.Add(this.totalToPayTextBox);
             this.Controls.Add(this.totalToPayLabel);
             this.Controls.Add(this.tipAmountLabel);
@@ -131,7 +120,6 @@
             this.Controls.Add(this.tipPercentageLabel);
             this.Controls.Add(this.calculatedTipTextBox);
             this.Controls.Add(this.totalBillTextBox);
-            this.Controls.Add(this.calculateTipButton);
             this.Controls.Add(this.totalBillLabel);
             this.Name = "TipCalculatorForm";
             this.Text = "Tip Calculator";
@@ -143,7 +131,6 @@
         #endregion
 
         private System.Windows.Forms.Label totalBillLabel;
-        private System.Windows.Forms.Button calculateTipButton;
         private System.Windows.Forms.TextBox totalBillTextBox;
         private System.Windows.Forms.TextBox calculatedTipTextBox;
         private System.Windows.Forms.TextBox tipPercentageTextBox;

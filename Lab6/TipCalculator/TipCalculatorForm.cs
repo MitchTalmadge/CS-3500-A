@@ -15,16 +15,30 @@ namespace TipCalculator
         public TipCalculatorForm()
         {
             InitializeComponent();
+            CalculateTip();
+        }
+
+        private void TotalBillTextBox_TextChanged(object sender, EventArgs e)
+        {
+            CalculateTip();
+        }
+
+        private void TipPercentageTextBox_TextChanged(object sender, EventArgs e)
+        {
+            CalculateTip();
         }
 
         /// <summary>
+        /// Checks the input for errors.
+        /// 
         /// Calculates the tip for the inputted total bill and tip percentage,
-        ///  and displays the tip and new total in the output fields.
+        /// and displays the tip and new total in the output fields.
         /// </summary>
-        private void CalculateTipButton_Click(object sender, EventArgs e)
+        private void CalculateTip()
         {
-            double.TryParse(totalBillTextBox.Text, out var bill);
-            double.TryParse(tipPercentageTextBox.Text, out var tip);
+            if (!double.TryParse(totalBillTextBox.Text, out var bill)
+                || !double.TryParse(tipPercentageTextBox.Text, out var tip))
+                return;
 
             // Calculate Tip
             var tipToPay = bill * (tip / 100);
@@ -32,25 +46,6 @@ namespace TipCalculator
 
             // Calculate Total Payment
             totalToPayTextBox.Text = (bill + tipToPay).ToString("C2");
-        }
-
-        private void TotalBillTextBox_TextChanged(object sender, EventArgs e)
-        {
-            ValidateInput();
-        }
-
-        private void TipPercentageTextBox_TextChanged(object sender, EventArgs e)
-        {
-            ValidateInput();
-        }
-
-        /// <summary>
-        /// Checks the input for errors and disables or enables the calculate button based on validity.
-        /// </summary>
-        private void ValidateInput()
-        {
-            calculateTipButton.Enabled = double.TryParse(totalBillTextBox.Text, out _)
-                                         && double.TryParse(tipPercentageTextBox.Text, out _);
         }
     }
 }
