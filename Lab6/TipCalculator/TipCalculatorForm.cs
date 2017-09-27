@@ -18,12 +18,24 @@ namespace TipCalculator
         }
 
         /// <summary>
-        /// Calculates the tip at 20% for the inputted total bill and displays it in the output field.
+        /// Calculates the tip for the inputted total bill and tip percentage,
+        ///  and displays it in the output field.
         /// </summary>
         private void CalculateTipButton_Click(object sender, EventArgs e)
         {
-            calculatedTipTextBox.Text =
-                double.TryParse(totalBillTextBox.Text, out var bill) ? bill * 0.2 + "" : "Invalid Input";
+            if (!double.TryParse(totalBillTextBox.Text, out var bill))
+            {
+                calculatedTipTextBox.Text = "Invalid Total Bill Input";
+                return;
+            }
+
+            if (!double.TryParse(tipPercentageTextBox.Text, out var tip))
+            {
+                calculatedTipTextBox.Text = "Invalid Tip Percentage Input";
+                return;
+            }
+
+            calculatedTipTextBox.Text = (bill * (tip/100)).ToString("C2");
         }
     }
 }

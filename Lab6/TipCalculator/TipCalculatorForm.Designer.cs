@@ -32,6 +32,8 @@
             this.calculateTipButton = new System.Windows.Forms.Button();
             this.totalBillTextBox = new System.Windows.Forms.TextBox();
             this.calculatedTipTextBox = new System.Windows.Forms.TextBox();
+            this.tipPercentageTextBox = new System.Windows.Forms.TextBox();
+            this.tipPercentageLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // totalBillLabel
@@ -45,7 +47,7 @@
             // 
             // calculateTipButton
             // 
-            this.calculateTipButton.Location = new System.Drawing.Point(88, 117);
+            this.calculateTipButton.Location = new System.Drawing.Point(88, 158);
             this.calculateTipButton.Name = "calculateTipButton";
             this.calculateTipButton.Size = new System.Drawing.Size(153, 39);
             this.calculateTipButton.TabIndex = 1;
@@ -57,22 +59,42 @@
             // 
             this.totalBillTextBox.Location = new System.Drawing.Point(271, 43);
             this.totalBillTextBox.Name = "totalBillTextBox";
-            this.totalBillTextBox.Size = new System.Drawing.Size(245, 31);
+            this.totalBillTextBox.Size = new System.Drawing.Size(105, 31);
             this.totalBillTextBox.TabIndex = 2;
+            this.totalBillTextBox.Text = "10.50";
             // 
             // calculatedTipTextBox
             // 
-            this.calculatedTipTextBox.Location = new System.Drawing.Point(271, 121);
+            this.calculatedTipTextBox.Location = new System.Drawing.Point(271, 162);
             this.calculatedTipTextBox.Name = "calculatedTipTextBox";
             this.calculatedTipTextBox.ReadOnly = true;
-            this.calculatedTipTextBox.Size = new System.Drawing.Size(245, 31);
+            this.calculatedTipTextBox.Size = new System.Drawing.Size(105, 31);
             this.calculatedTipTextBox.TabIndex = 3;
+            // 
+            // tipPercentageTextBox
+            // 
+            this.tipPercentageTextBox.Location = new System.Drawing.Point(310, 104);
+            this.tipPercentageTextBox.Name = "tipPercentageTextBox";
+            this.tipPercentageTextBox.Size = new System.Drawing.Size(66, 31);
+            this.tipPercentageTextBox.TabIndex = 5;
+            this.tipPercentageTextBox.Text = "20";
+            // 
+            // tipPercentageLabel
+            // 
+            this.tipPercentageLabel.AutoSize = true;
+            this.tipPercentageLabel.Location = new System.Drawing.Point(83, 110);
+            this.tipPercentageLabel.Name = "tipPercentageLabel";
+            this.tipPercentageLabel.Size = new System.Drawing.Size(221, 25);
+            this.tipPercentageLabel.TabIndex = 4;
+            this.tipPercentageLabel.Text = "Enter Tip Percentage:";
             // 
             // TipCalculatorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(582, 210);
+            this.ClientSize = new System.Drawing.Size(456, 275);
+            this.Controls.Add(this.tipPercentageTextBox);
+            this.Controls.Add(this.tipPercentageLabel);
             this.Controls.Add(this.calculatedTipTextBox);
             this.Controls.Add(this.totalBillTextBox);
             this.Controls.Add(this.calculateTipButton);
@@ -90,6 +112,8 @@
         private System.Windows.Forms.Button calculateTipButton;
         private System.Windows.Forms.TextBox totalBillTextBox;
         private System.Windows.Forms.TextBox calculatedTipTextBox;
+        private System.Windows.Forms.TextBox tipPercentageTextBox;
+        private System.Windows.Forms.Label tipPercentageLabel;
     }
 }
 
