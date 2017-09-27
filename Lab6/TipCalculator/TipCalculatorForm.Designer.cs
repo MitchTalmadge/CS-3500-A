@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TipCalculatorForm));
             this.totalBillLabel = new System.Windows.Forms.Label();
             this.totalBillTextBox = new System.Windows.Forms.TextBox();
             this.calculatedTipTextBox = new System.Windows.Forms.TextBox();
@@ -41,15 +42,18 @@
             // totalBillLabel
             // 
             this.totalBillLabel.AutoSize = true;
-            this.totalBillLabel.Location = new System.Drawing.Point(83, 49);
+            this.totalBillLabel.BackColor = System.Drawing.Color.Transparent;
+            this.totalBillLabel.Font = new System.Drawing.Font("Rockwell", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.totalBillLabel.ForeColor = System.Drawing.Color.White;
+            this.totalBillLabel.Location = new System.Drawing.Point(12, 46);
             this.totalBillLabel.Name = "totalBillLabel";
-            this.totalBillLabel.Size = new System.Drawing.Size(158, 25);
+            this.totalBillLabel.Size = new System.Drawing.Size(277, 42);
             this.totalBillLabel.TabIndex = 0;
             this.totalBillLabel.Text = "Enter Total Bill:";
             // 
             // totalBillTextBox
             // 
-            this.totalBillTextBox.Location = new System.Drawing.Point(271, 43);
+            this.totalBillTextBox.Location = new System.Drawing.Point(404, 57);
             this.totalBillTextBox.Name = "totalBillTextBox";
             this.totalBillTextBox.Size = new System.Drawing.Size(105, 31);
             this.totalBillTextBox.TabIndex = 0;
@@ -58,7 +62,7 @@
             // 
             // calculatedTipTextBox
             // 
-            this.calculatedTipTextBox.Location = new System.Drawing.Point(221, 162);
+            this.calculatedTipTextBox.Location = new System.Drawing.Point(404, 175);
             this.calculatedTipTextBox.Name = "calculatedTipTextBox";
             this.calculatedTipTextBox.ReadOnly = true;
             this.calculatedTipTextBox.Size = new System.Drawing.Size(155, 31);
@@ -66,7 +70,7 @@
             // 
             // tipPercentageTextBox
             // 
-            this.tipPercentageTextBox.Location = new System.Drawing.Point(310, 104);
+            this.tipPercentageTextBox.Location = new System.Drawing.Point(404, 118);
             this.tipPercentageTextBox.Name = "tipPercentageTextBox";
             this.tipPercentageTextBox.Size = new System.Drawing.Size(66, 31);
             this.tipPercentageTextBox.TabIndex = 1;
@@ -76,33 +80,42 @@
             // tipPercentageLabel
             // 
             this.tipPercentageLabel.AutoSize = true;
-            this.tipPercentageLabel.Location = new System.Drawing.Point(83, 110);
+            this.tipPercentageLabel.BackColor = System.Drawing.Color.Transparent;
+            this.tipPercentageLabel.Font = new System.Drawing.Font("Rockwell", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tipPercentageLabel.ForeColor = System.Drawing.Color.White;
+            this.tipPercentageLabel.Location = new System.Drawing.Point(12, 107);
             this.tipPercentageLabel.Name = "tipPercentageLabel";
-            this.tipPercentageLabel.Size = new System.Drawing.Size(221, 25);
+            this.tipPercentageLabel.Size = new System.Drawing.Size(386, 42);
             this.tipPercentageLabel.TabIndex = 4;
             this.tipPercentageLabel.Text = "Enter Tip Percentage:";
             // 
             // tipAmountLabel
             // 
             this.tipAmountLabel.AutoSize = true;
-            this.tipAmountLabel.Location = new System.Drawing.Point(83, 165);
+            this.tipAmountLabel.BackColor = System.Drawing.Color.Transparent;
+            this.tipAmountLabel.Font = new System.Drawing.Font("Rockwell", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tipAmountLabel.ForeColor = System.Drawing.Color.White;
+            this.tipAmountLabel.Location = new System.Drawing.Point(12, 162);
             this.tipAmountLabel.Name = "tipAmountLabel";
-            this.tipAmountLabel.Size = new System.Drawing.Size(127, 25);
+            this.tipAmountLabel.Size = new System.Drawing.Size(225, 42);
             this.tipAmountLabel.TabIndex = 6;
             this.tipAmountLabel.Text = "Tip Amount:";
             // 
             // totalToPayLabel
             // 
             this.totalToPayLabel.AutoSize = true;
-            this.totalToPayLabel.Location = new System.Drawing.Point(83, 226);
+            this.totalToPayLabel.BackColor = System.Drawing.Color.Transparent;
+            this.totalToPayLabel.Font = new System.Drawing.Font("Rockwell", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.totalToPayLabel.ForeColor = System.Drawing.Color.White;
+            this.totalToPayLabel.Location = new System.Drawing.Point(12, 223);
             this.totalToPayLabel.Name = "totalToPayLabel";
-            this.totalToPayLabel.Size = new System.Drawing.Size(133, 25);
+            this.totalToPayLabel.Size = new System.Drawing.Size(225, 42);
             this.totalToPayLabel.TabIndex = 7;
             this.totalToPayLabel.Text = "Total to Pay:";
             // 
             // totalToPayTextBox
             // 
-            this.totalToPayTextBox.Location = new System.Drawing.Point(221, 220);
+            this.totalToPayTextBox.Location = new System.Drawing.Point(404, 234);
             this.totalToPayTextBox.Name = "totalToPayTextBox";
             this.totalToPayTextBox.ReadOnly = true;
             this.totalToPayTextBox.Size = new System.Drawing.Size(155, 31);
@@ -112,7 +125,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(456, 302);
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            this.ClientSize = new System.Drawing.Size(573, 405);
             this.Controls.Add(this.totalToPayTextBox);
             this.Controls.Add(this.totalToPayLabel);
             this.Controls.Add(this.tipAmountLabel);
