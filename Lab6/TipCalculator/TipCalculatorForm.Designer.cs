@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TipCalculatorForm));
             this.totalBillLabel = new System.Windows.Forms.Label();
             this.totalBillTextBox = new System.Windows.Forms.TextBox();
             this.calculatedTipTextBox = new System.Windows.Forms.TextBox();
@@ -125,8 +124,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(573, 405);
+            this.BackgroundImage = global::TipCalculator.Properties.Resources.guy_fieri;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ClientSize = new System.Drawing.Size(614, 409);
             this.Controls.Add(this.totalToPayTextBox);
             this.Controls.Add(this.totalToPayLabel);
             this.Controls.Add(this.tipAmountLabel);
