@@ -7,6 +7,9 @@ using SpreadsheetUtilities;
 using SS;
 
 namespace SpreadsheetTests
+
+    //TODO: Test removing cells
+    //TODO: Test circular dependency when setting Formula content
 {
     [TestClass]
     public class SpreadsheetTests
@@ -162,6 +165,31 @@ namespace SpreadsheetTests
             Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
             Assert.AreEqual("", spreadsheet.GetCellContents("nathan_milot"));
             Assert.AreEqual("", spreadsheet.GetCellContents("hannah_potter"));
+        }
+
+        /// <summary>
+        /// Tests that all the non-empty cells' names can be retrieved.
+        /// </summary>
+        public void TestGetNamesOfAllNonEmptyCells()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // Should be empty at first
+            CollectionAssert.AreEqual(new string[]{}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+
+            // Add some cells
+            spreadsheet.SetCellContents("a1", 1d);
+            spreadsheet.SetCellContents("cat", 2d);
+            spreadsheet.SetCellContents("alt_f4", 3d);
+
+            // Check for the added cells
+            CollectionAssert.AreEquivalent(new[] {"a1", "cat", "alt_f4"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+
+            // Clear a cell
+            spreadsheet.SetCellContents("cat", "");
+
+            // Check that the cell is no longer returned
+            CollectionAssert.AreEquivalent(new[] { "a1", "alt_f4" }, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
         }
 
         /// <summary>
