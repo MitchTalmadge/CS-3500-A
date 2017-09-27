@@ -111,7 +111,57 @@ namespace SpreadsheetTests
             Assert.AreEqual(new Formula("11 - B4 + (6 * C3)"), spreadsheet.GetCellContents("a2"), "Could not set a2");
 
             // Make sure it didn't collide with previous cell
-            Assert.AreEqual(new Formula("5 * (4 + 5)"), spreadsheet.GetCellContents("a1"), "a1 changed after setting a2");
+            Assert.AreEqual(new Formula("5 * (4 + 5)"), spreadsheet.GetCellContents("a1"),
+                "a1 changed after setting a2");
+        }
+
+        /// <summary>
+        /// Tests setting cells with null or invalid names.
+        /// </summary>
+        [TestMethod]
+        public void TestSetWithInvalidNames()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // Invalid name format
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("AB!", "test"));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("A B", "test"));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("", "test"));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("6a", 0d));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("(d)", 0d));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("_____-___", 0d));
+            Assert.ThrowsException<ArgumentNullException>(
+                () => spreadsheet.SetCellContents("d-5", new Formula("1 + 2")));
+
+            // Null name
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents(null, "test"));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents(null, 0d));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                spreadsheet.SetCellContents(null, new Formula("1 + 2")));
+        }
+
+        /// <summary>
+        /// Tests setting cells to null contents.
+        /// </summary>
+        [TestMethod]
+        public void TestSetNullContents()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("a1", (string) null));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("a1", (Formula) null));
+        }
+
+        /// <summary>
+        /// Tests that retrieving an empty cell will return an empty string.
+        /// </summary>
+        public void TestGetEmptyCell()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
+            Assert.AreEqual("", spreadsheet.GetCellContents("nathan_milot"));
+            Assert.AreEqual("", spreadsheet.GetCellContents("hannah_potter"));
         }
 
         /// <summary>
@@ -133,15 +183,30 @@ namespace SpreadsheetTests
             spreadsheet.SetCellContents("c2", new Formula("5 + 10"));
             spreadsheet.SetCellContents("daniel_kopta", new Formula("b1 + d1"));
 
-            // Check direct dependents.
-            var dependents = ((IEnumerable<string>) typeof(Spreadsheet).InvokeMember("GetDirectDependents",
-                BindingFlags.InvokeMethod, null, spreadsheet, new[] {"a1"})).ToArray();
+            // Check direct dependents. (Called using a PrivateObject)
+            var dependents = (IEnumerable<string>) new PrivateObject(spreadsheet).Invoke("GetDirectDependents", "a1");
 
-            Assert.AreEqual(2, dependents.Length, "There were too many direct dependents.");
-            CollectionAssert.Contains(dependents, "b1", "The direct dependents does not include b1.");
-            CollectionAssert.Contains(dependents, "d1", "The direct dependents does not include d1.");
-            CollectionAssert.DoesNotContain(dependents, "c2", "The direct dependents includes c2.");
-            CollectionAssert.DoesNotContain(dependents, "daniel_kopta", "The direct dependents includes daniel_kopta.");
+            CollectionAssert.AreEquivalent(new[] {"b1", "d1"}, dependents.ToArray());
+        }
+
+        /// <summary>
+        /// Tests that a correct set of dependencies are returned when setting a cell.
+        /// </summary>
+        [TestMethod]
+        public void TestSetReturnsDependencies()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // One cell, no dependencies
+            CollectionAssert.AreEqual(new string[] { }, spreadsheet.SetCellContents("a1", 10d).ToArray());
+
+            // Direct dependency
+            spreadsheet.SetCellContents("a2", new Formula("a1 + 5"));
+            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray());
+
+            // Indirect dependency
+            spreadsheet.SetCellContents("a3", new Formula("a2 + 5"));
+            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray());
         }
     }
 }

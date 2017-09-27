@@ -39,7 +39,7 @@
     <Content Include="Libraries\Formula.xml" />
     <Content Include="Libraries\SpreadsheetUtilities.dll" />
     <Content Include="Libraries\SpreadsheetUtilities.xml" />
-    <None Include="README" />
+    <None Include="DONT_FORGET_TO_DO_THE_README" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
