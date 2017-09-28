@@ -85,18 +85,38 @@ namespace SS
         /// <returns>The cells which depend on the updated cell, either directly or indirectly.</returns>
         private ISet<string> UpdateCell(string name, object contents)
         {
-            // Dependencies of formulas must be added to the graph.
+            // Holds the cells which need to be recalculated.
+            ISet<string> cellsToRecalculate;
+
+            // Dependencies of formulas must be updated in the graph.
             if (contents is Formula formula)
             {
-                // Add dependencies to graph.
-                foreach (var variable in formula.GetVariables())
+                // Keep track of the old dependees
+                var oldDependees = _formulaCellDependencyGraph.GetDependees(name);
+
+                // Replace the old dependees with the new dependees.
+                _formulaCellDependencyGraph.ReplaceDependees(name, formula.GetVariables());
+
+                // Check for a circular dependency.
+                try
                 {
-                    _formulaCellDependencyGraph.AddDependency(variable, name);
+                    cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+                }
+                catch (CircularException)
+                {
+                    // Restore old dependees upon a circular exception so that nothing is modified.
+                    _formulaCellDependencyGraph.ReplaceDependees(name, oldDependees);
+                    throw;
                 }
             }
+            else
+            {
+                // Clear any old dependees in the graph
+                _formulaCellDependencyGraph.ReplaceDependees(name, new string[0]);
 
-            // Check cells to recalculate, also catching circular dependencies.
-            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+                // Find cells to re-calculate.
+                cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            }
 
             // Remove ourselves from the cells to recalculate.
             cellsToRecalculate.Remove(name);
@@ -108,7 +128,9 @@ namespace SS
                 return cellsToRecalculate;
             }
 
+            // Add the cell to the dictionary.
             _cells[name] = new Cell(contents);
+
             return cellsToRecalculate;
         }
 
