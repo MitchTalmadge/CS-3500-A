@@ -1,1 +1,11 @@
-﻿TODO: not forget about this file
+﻿Mitch Talmadge, u1031378
+9/28/2017
+
+My initial design thoughts for this project were to use a Dictionary to map names to cells. I started creating a Cell class and decided
+not to add a name field since it was already in the Dictionary, and felt redundant / wasteful. When implementing the dependency-finding
+methods, I started by using a for loop that traversed the Dictionary, then realized that I had done all that in PS2. After adding the
+DependencyGraph and creating helper methods, it all came together.
+
+The versions of PS2 and PS3 I am using are those from commit 0fcc3596 at 9/25/2017 7:08:30 AM
+
+Notes to TA: u da best
