@@ -7,10 +7,12 @@ using SpreadsheetUtilities;
 using SS;
 
 namespace SpreadsheetTests
-
-    //TODO: Test removing cells
-    //TODO: Test circular dependency when setting Formula content
 {
+    //TODO: Test removing cells
+    //TODO: Test get null/invalid cells
+    //TODO: Test get direct dependents with null/invalid name
+    //TODO: Test circular dependency when setting Formula content
+
     [TestClass]
     public class SpreadsheetTests
     {
@@ -127,19 +129,19 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Invalid name format
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("AB!", "test"));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("A B", "test"));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("", "test"));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("6a", 0d));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("(d)", 0d));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("_____-___", 0d));
-            Assert.ThrowsException<ArgumentNullException>(
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("AB!", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("A B", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("6a", 0d));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("(d)", 0d));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("_____-___", 0d));
+            Assert.ThrowsException<InvalidNameException>(
                 () => spreadsheet.SetCellContents("d-5", new Formula("1 + 2")));
 
             // Null name
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents(null, "test"));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents(null, 0d));
-            Assert.ThrowsException<ArgumentNullException>(() =>
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents(null, "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents(null, 0d));
+            Assert.ThrowsException<InvalidNameException>(() =>
                 spreadsheet.SetCellContents(null, new Formula("1 + 2")));
         }
 
@@ -175,7 +177,7 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Should be empty at first
-            CollectionAssert.AreEqual(new string[]{}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            CollectionAssert.AreEqual(new string[] { }, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
 
             // Add some cells
             spreadsheet.SetCellContents("a1", 1d);
@@ -183,13 +185,14 @@ namespace SpreadsheetTests
             spreadsheet.SetCellContents("alt_f4", 3d);
 
             // Check for the added cells
-            CollectionAssert.AreEquivalent(new[] {"a1", "cat", "alt_f4"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "cat", "alt_f4"},
+                spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
 
             // Clear a cell
             spreadsheet.SetCellContents("cat", "");
 
             // Check that the cell is no longer returned
-            CollectionAssert.AreEquivalent(new[] { "a1", "alt_f4" }, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "alt_f4"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
         }
 
         /// <summary>
