@@ -7,7 +7,6 @@ using SpreadsheetUtilities;
 
 namespace SS
 {
-
     /// <summary>
     /// Thrown to indicate that a change to a cell will cause a circular dependency.
     /// </summary>
@@ -194,14 +193,20 @@ namespace SS
         /// </summary>
         protected IEnumerable<String> GetCellsToRecalculate(String name)
         {
-            return GetCellsToRecalculate(new HashSet<String>() { name });
+            return GetCellsToRecalculate(new HashSet<String>() {name});
         }
 
 
         /// <summary>
         /// A helper for the GetCellsToRecalculate method.
         /// 
-        ///   -- You should fully comment what is going on below --
+        /// This is a recursive method which, starting at the start cell, will traverse the dependents of each cell
+        /// and record them as being dependees of the calling cell. Additionally, it will keep track of the visited cells
+        /// so that they are not traversed twice, which would cause an infinite loop. 
+        /// 
+        /// Once there is nothing left to visit for a particular cell, it will be marked as changed. 
+        /// 
+        /// If the start cell is ever visited twice, there exists a circular dependency, and a CircularException will be thrown.
         /// </summary>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {
@@ -219,6 +224,5 @@ namespace SS
             }
             changed.AddFirst(name);
         }
-
     }
 }
