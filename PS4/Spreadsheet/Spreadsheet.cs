@@ -118,9 +118,6 @@ namespace SS
                 cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
             }
 
-            // Remove ourselves from the cells to recalculate.
-            cellsToRecalculate.Remove(name);
-
             // Text cells must be checked carefully because setting a cell to empty text removes it from the dictionary.
             if (contents is string text && text == "")
             {

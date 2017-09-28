@@ -344,17 +344,17 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // One cell, no dependencies
-            CollectionAssert.AreEqual(new string[0], spreadsheet.SetCellContents("a1", 10d).ToArray(),
+            CollectionAssert.AreEqual(new[] { "a1" }, spreadsheet.SetCellContents("a1", 10d).ToArray(),
                 "Dependencies were returned when none should have been found.");
 
             // Direct dependency
             spreadsheet.SetCellContents("a2", new Formula("a1 + 5"));
-            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+            CollectionAssert.AreEqual(new[] {"a1", "a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
                 "The direct dependencies returned did not match.");
 
             // Indirect dependency
             spreadsheet.SetCellContents("a3", new Formula("a2 + 5"));
-            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
                 "The direct and indirect dependencies returned did not match.");
         }
 
@@ -392,7 +392,7 @@ namespace SpreadsheetTests
 
             // Make sure nothing was changed
             Assert.AreEqual("", spreadsheet.GetCellContents("a2"));
-            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("d5", 10d).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"d5"}, spreadsheet.SetCellContents("d5", 10d).ToArray());
         }
 
         /// <summary>
@@ -405,20 +405,20 @@ namespace SpreadsheetTests
 
             // a2 depends on a1
             spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
-            CollectionAssert.AreEquivalent(new[] {"a1"}, spreadsheet.SetCellContents("a2", 10d).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2"}, spreadsheet.SetCellContents("a2", 10d).ToArray());
 
             // Replace a1 with double; a1 should no longer depend on a2
             spreadsheet.SetCellContents("a1", 5d);
-            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("a2", 5d).ToArray(), "Direct dependency was not removed.");
+            CollectionAssert.AreEquivalent(new[] { "a2" }, spreadsheet.SetCellContents("a2", 5d).ToArray(), "Direct dependency was not removed.");
 
             // Create indirect dependency: a3 depends on a1 via a2.
             spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
-            CollectionAssert.AreEquivalent(new[] { "a1" }, spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
-            CollectionAssert.AreEquivalent(new[] { "a1", "a2" }, spreadsheet.SetCellContents("a3", 10d).ToArray());
+            CollectionAssert.AreEquivalent(new[] { "a1", "a2" }, spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
+            CollectionAssert.AreEquivalent(new[] { "a1", "a2", "a3" }, spreadsheet.SetCellContents("a3", 10d).ToArray());
 
             // Replace a2 with double; a1 should no longer depend on a3.
             spreadsheet.SetCellContents("a2", 10d);
-            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("a3", "cat").ToArray(), "Indirect dependency was not removed.");
+            CollectionAssert.AreEquivalent(new[] { "a3" }, spreadsheet.SetCellContents("a3", "cat").ToArray(), "Indirect dependency was not removed.");
         }
     }
 }
