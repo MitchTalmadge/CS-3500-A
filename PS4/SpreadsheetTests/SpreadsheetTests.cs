@@ -8,9 +8,6 @@ using SS;
 
 namespace SpreadsheetTests
 {
-    //TODO: Test circular dependency when setting Formula content
-    //TODO: Test setting a cell which used to be Formula, make sure dependency is gone
-
     [TestClass]
     public class SpreadsheetTests
     {
@@ -391,10 +388,37 @@ namespace SpreadsheetTests
             spreadsheet.SetCellContents("a3", new Formula("a2 - 5"));
 
             // Adding this cell will cause the circular dependency.
-            Assert.ThrowsException<CircularException>(() => spreadsheet.SetCellContents("a2", new Formula("a1 + d3")));
+            Assert.ThrowsException<CircularException>(() => spreadsheet.SetCellContents("a2", new Formula("a1 + d5")));
 
             // Make sure nothing was changed
             Assert.AreEqual("", spreadsheet.GetCellContents("a2"));
+            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("d5", 10d).ToArray());
+        }
+
+        /// <summary>
+        /// Tests that formulas can be replaced and their dependencies (direct or indirect) are updated correctly.
+        /// </summary>
+        [TestMethod]
+        public void TestReplaceFormula()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // a2 depends on a1
+            spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
+            CollectionAssert.AreEquivalent(new[] {"a1"}, spreadsheet.SetCellContents("a2", 10d).ToArray());
+
+            // Replace a1 with double; a1 should no longer depend on a2
+            spreadsheet.SetCellContents("a1", 5d);
+            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("a2", 5d).ToArray(), "Direct dependency was not removed.");
+
+            // Create indirect dependency: a3 depends on a1 via a2.
+            spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
+            CollectionAssert.AreEquivalent(new[] { "a1" }, spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
+            CollectionAssert.AreEquivalent(new[] { "a1", "a2" }, spreadsheet.SetCellContents("a3", 10d).ToArray());
+
+            // Replace a2 with double; a1 should no longer depend on a3.
+            spreadsheet.SetCellContents("a2", 10d);
+            CollectionAssert.AreEquivalent(new string[0], spreadsheet.SetCellContents("a3", "cat").ToArray(), "Indirect dependency was not removed.");
         }
     }
 }
