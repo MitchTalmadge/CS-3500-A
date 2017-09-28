@@ -37,7 +37,7 @@ namespace SS
         public override object GetCellContents(string name)
         {
             // Check name validity
-            if(name == null || !IsCellNameValid(name))
+            if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
             // Check if the cell has any contents
@@ -49,13 +49,7 @@ namespace SS
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
-            //TODO: check that cell used to be formula
-
-            _cells[name] = new Cell(number);
-
-            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
-            cellsToRecalculate.Remove(name);
-            return cellsToRecalculate;
+            return UpdateCell(name, number);
         }
 
         public override ISet<string> SetCellContents(string name, string text)
@@ -64,23 +58,11 @@ namespace SS
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
-            switch (text)
-            {
-                case null: // Null text is not allowed.
-                    throw new ArgumentNullException();
-                case "": // Empty text should remove the cell from the dictionary.
-                    _cells.Remove(name);
-                    break;
-                default: // All other text creates a new cell.
-                    _cells[name] = new Cell(text);
-                    break;
-            }
+            // Text cannot be null.
+            if (text == null)
+                throw new ArgumentNullException();
 
-            //TODO: check that cell used to be formula
-
-            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
-            cellsToRecalculate.Remove(name);
-            return cellsToRecalculate;
+            return UpdateCell(name, text);
         }
 
         public override ISet<string> SetCellContents(string name, Formula formula)
@@ -91,21 +73,42 @@ namespace SS
             if (formula == null)
                 throw new ArgumentNullException();
 
-            //TODO: check that cell used to be formula
+            return UpdateCell(name, formula);
+        }
 
-            // Add dependencies to graph.
-            foreach (var variable in formula.GetVariables())
+        /// <summary>
+        /// Updates a cell with the given contents.
+        /// Updates formula dependencies where needed.
+        /// </summary>
+        /// <param name="name">The name of the cell to update.</param>
+        /// <param name="contents">The new contents of the cell.</param>
+        /// <returns>The cells which depend on the updated cell, either directly or indirectly.</returns>
+        private ISet<string> UpdateCell(string name, object contents)
+        {
+            // Dependencies of formulas must be added to the graph.
+            if (contents is Formula formula)
             {
-                _formulaCellDependencyGraph.AddDependency(variable, name);
+                // Add dependencies to graph.
+                foreach (var variable in formula.GetVariables())
+                {
+                    _formulaCellDependencyGraph.AddDependency(variable, name);
+                }
             }
 
             // Check cells to recalculate, also catching circular dependencies.
             var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+
+            // Remove ourselves from the cells to recalculate.
             cellsToRecalculate.Remove(name);
 
-            // Add cell to dictionary.
-            _cells[name] = new Cell(formula);
+            // Text cells must be checked carefully because setting a cell to empty text removes it from the dictionary.
+            if (contents is string text && text == "")
+            {
+                _cells.Remove(name);
+                return cellsToRecalculate;
+            }
 
+            _cells[name] = new Cell(contents);
             return cellsToRecalculate;
         }
 
