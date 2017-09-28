@@ -173,7 +173,7 @@ namespace SpreadsheetTests
         /// Tests the behavior of trying to retrieve a null or invalid cell.
         /// </summary>
         [TestMethod]
-        public void TestGetInvalidCell()
+        public void TestGetInvalidCellName()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
@@ -237,6 +237,106 @@ namespace SpreadsheetTests
             var dependents = (IEnumerable<string>) new PrivateObject(spreadsheet).Invoke("GetDirectDependents", "a1");
 
             CollectionAssert.AreEquivalent(new[] {"b1", "d1"}, dependents.ToArray());
+        }
+
+        /// <summary>
+        /// Tests getting a cell's direct dependents when the cell name is invalid.
+        /// </summary>
+        [TestMethod]
+        public void TestGetDirectDependentsWithInvalidCellName()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+            var privateObject = new PrivateObject(spreadsheet);
+
+            // The try catch is needed because private objects will throw TargetInvocationExceptions which contain the original exception.
+            Assert.ThrowsException<ArgumentNullException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", new object[] {null});
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "5A");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "a!1");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "_a1-2");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "()");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", "(5 + 6)");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
+            Assert.ThrowsException<InvalidNameException>(() =>
+            {
+                try
+                {
+                    return privateObject.Invoke("GetDirectDependents", " a1 ");
+                }
+                catch (TargetInvocationException e)
+                {
+                    throw e.GetBaseException();
+                }
+            });
         }
 
         /// <summary>
