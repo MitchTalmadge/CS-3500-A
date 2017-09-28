@@ -8,8 +8,6 @@ using SS;
 
 namespace SpreadsheetTests
 {
-    //TODO: Test removing cells
-    //TODO: Test get null/invalid cells
     //TODO: Test get direct dependents with null/invalid name
     //TODO: Test circular dependency when setting Formula content
     //TODO: Test setting a cell which used to be Formula, make sure dependency is gone
@@ -172,6 +170,24 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
+        /// Tests the behavior of trying to retrieve a null or invalid cell.
+        /// </summary>
+        [TestMethod]
+        public void TestGetInvalidCell()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents(null));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents(""));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("5A"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("a!1"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("_a1-2"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("()"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("(5 + 6)"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents(" a1 "));
+        }
+
+        /// <summary>
         /// Tests that all the non-empty cells' names can be retrieved.
         /// </summary>
         [TestMethod]
@@ -180,7 +196,7 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Should be empty at first
-            CollectionAssert.AreEqual(new string[] { }, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            CollectionAssert.AreEqual(new string[0], spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
 
             // Add some cells
             spreadsheet.SetCellContents("a1", 1d);
@@ -232,15 +248,37 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // One cell, no dependencies
-            CollectionAssert.AreEqual(new string[] { }, spreadsheet.SetCellContents("a1", 10d).ToArray(), "Dependencies were returned when none should have been found.");
+            CollectionAssert.AreEqual(new string[0], spreadsheet.SetCellContents("a1", 10d).ToArray(),
+                "Dependencies were returned when none should have been found.");
 
             // Direct dependency
             spreadsheet.SetCellContents("a2", new Formula("a1 + 5"));
-            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(), "The direct dependencies returned did not match.");
+            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+                "The direct dependencies returned did not match.");
 
             // Indirect dependency
             spreadsheet.SetCellContents("a3", new Formula("a2 + 5"));
-            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(), "The direct and indirect dependencies returned did not match.");
+            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+                "The direct and indirect dependencies returned did not match.");
+        }
+
+        /// <summary>
+        /// Tests the ability to "remove" the contents of a cell by setting it to an empty string.
+        /// </summary>
+        [TestMethod]
+        public void TestRemoveCells()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // Add cell
+            spreadsheet.SetCellContents("a1", "doggo");
+            CollectionAssert.AreEquivalent(new[] {"a1"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            Assert.AreEqual("doggo", spreadsheet.GetCellContents("a1"));
+
+            // Remove cell
+            spreadsheet.SetCellContents("a1", "");
+            CollectionAssert.AreEquivalent(new string[0], spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
         }
     }
 }

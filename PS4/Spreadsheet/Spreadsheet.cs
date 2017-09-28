@@ -36,10 +36,12 @@ namespace SS
 
         public override object GetCellContents(string name)
         {
-            if (!_cells.TryGetValue(name, out var cell))
-                return "";
+            // Check name validity
+            if(name == null || !IsCellNameValid(name))
+                throw new InvalidNameException();
 
-            return cell.Content;
+            // Check if the cell has any contents
+            return !_cells.TryGetValue(name, out var cell) ? "" : cell.Content;
         }
 
         public override ISet<string> SetCellContents(string name, double number)
@@ -58,20 +60,23 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, string text)
         {
-            // Validate name
+            // Check name validity
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
-            if (text == null)
-                throw new ArgumentNullException();
+            switch (text)
+            {
+                case null: // Null text is not allowed.
+                    throw new ArgumentNullException();
+                case "": // Empty text should remove the cell from the dictionary.
+                    _cells.Remove(name);
+                    break;
+                default: // All other text creates a new cell.
+                    _cells[name] = new Cell(text);
+                    break;
+            }
 
             //TODO: check that cell used to be formula
-
-            // Check for empty text, which means we can remove this cell from the dictionary.
-            if (text == "")
-                _cells.Remove(name);
-            else
-                _cells[name] = new Cell(text);
 
             var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
             cellsToRecalculate.Remove(name);
