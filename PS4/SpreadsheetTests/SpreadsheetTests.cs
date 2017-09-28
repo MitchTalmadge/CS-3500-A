@@ -8,7 +8,6 @@ using SS;
 
 namespace SpreadsheetTests
 {
-    //TODO: Test get direct dependents with null/invalid name
     //TODO: Test circular dependency when setting Formula content
     //TODO: Test setting a cell which used to be Formula, make sure dependency is gone
 
@@ -379,6 +378,23 @@ namespace SpreadsheetTests
             spreadsheet.SetCellContents("a1", "");
             CollectionAssert.AreEquivalent(new string[0], spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
             Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
+        }
+
+        /// <summary>
+        /// Tests creating a circular dependency.
+        /// </summary>
+        [TestMethod]
+        public void TestCircularDependency()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+            spreadsheet.SetCellContents("a1", new Formula("a3 * d3"));
+            spreadsheet.SetCellContents("a3", new Formula("a2 - 5"));
+
+            // Adding this cell will cause the circular dependency.
+            Assert.ThrowsException<CircularException>(() => spreadsheet.SetCellContents("a2", new Formula("a1 + d3")));
+
+            // Make sure nothing was changed
+            Assert.AreEqual("", spreadsheet.GetCellContents("a2"));
         }
     }
 }

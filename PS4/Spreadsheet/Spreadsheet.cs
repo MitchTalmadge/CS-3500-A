@@ -93,17 +93,19 @@ namespace SS
 
             //TODO: check that cell used to be formula
 
-            // Add cell to dictionary.
-            _cells[name] = new Cell(formula);
-
             // Add dependencies to graph.
             foreach (var variable in formula.GetVariables())
             {
                 _formulaCellDependencyGraph.AddDependency(variable, name);
             }
 
+            // Check cells to recalculate, also catching circular dependencies.
             var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
             cellsToRecalculate.Remove(name);
+
+            // Add cell to dictionary.
+            _cells[name] = new Cell(formula);
+
             return cellsToRecalculate;
         }
 
