@@ -23,7 +23,7 @@ namespace SS
         /// This dependency graph links the cells which contain formulas together.
         /// </summary>
         private readonly DependencyGraph _formulaCellDependencyGraph = new DependencyGraph();
-        
+
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
             // Copy the cells to a new array.
@@ -44,9 +44,9 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, double number)
         {
-            if(name == null || !IsCellNameValid(name))
+            if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
-            
+
             //TODO: check that cell used to be formula
 
             _cells[name] = new Cell(number);
@@ -67,7 +67,11 @@ namespace SS
 
             //TODO: check that cell used to be formula
 
-            _cells[name] = new Cell(text);
+            // Check for empty text, which means we can remove this cell from the dictionary.
+            if (text == "")
+                _cells.Remove(name);
+            else
+                _cells[name] = new Cell(text);
 
             var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
             cellsToRecalculate.Remove(name);
@@ -106,10 +110,10 @@ namespace SS
         /// <returns>The direct dependents of the given cell, if any.</returns>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            if(name == null)
+            if (name == null)
                 throw new ArgumentNullException();
 
-            if(!IsCellNameValid(name))
+            if (!IsCellNameValid(name))
                 throw new InvalidNameException();
 
             return _formulaCellDependencyGraph.GetDependents(name);

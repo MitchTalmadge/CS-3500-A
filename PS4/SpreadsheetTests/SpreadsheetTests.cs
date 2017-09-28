@@ -161,6 +161,7 @@ namespace SpreadsheetTests
         /// <summary>
         /// Tests that retrieving an empty cell will return an empty string.
         /// </summary>
+        [TestMethod]
         public void TestGetEmptyCell()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
@@ -173,6 +174,7 @@ namespace SpreadsheetTests
         /// <summary>
         /// Tests that all the non-empty cells' names can be retrieved.
         /// </summary>
+        [TestMethod]
         public void TestGetNamesOfAllNonEmptyCells()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
