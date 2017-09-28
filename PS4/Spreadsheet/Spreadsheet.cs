@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
 
@@ -17,6 +18,11 @@ namespace SS
         /// Any cells not in this table are considered "empty" and contain only an empty string ("").
         /// </summary>
         private readonly Dictionary<string, Cell> _cells = new Dictionary<string, Cell>();
+
+        /// <summary>
+        /// This dependency graph links the cells which contain formulas together.
+        /// </summary>
+        private readonly DependencyGraph _formulaCellDependencyGraph = new DependencyGraph();
         
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
@@ -40,16 +46,32 @@ namespace SS
         {
             if(name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
+            
+            //TODO: check that cell used to be formula
 
-            return null;
+            _cells[name] = new Cell(number);
+
+            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            cellsToRecalculate.Remove(name);
+            return cellsToRecalculate;
         }
 
         public override ISet<string> SetCellContents(string name, string text)
         {
+            // Validate name
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
-            return null;
+            if (text == null)
+                throw new ArgumentNullException();
+
+            //TODO: check that cell used to be formula
+
+            _cells[name] = new Cell(text);
+
+            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            cellsToRecalculate.Remove(name);
+            return cellsToRecalculate;
         }
 
         public override ISet<string> SetCellContents(string name, Formula formula)
@@ -57,12 +79,40 @@ namespace SS
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
 
-            return null;
+            if (formula == null)
+                throw new ArgumentNullException();
+
+            //TODO: check that cell used to be formula
+
+            // Add cell to dictionary.
+            _cells[name] = new Cell(formula);
+
+            // Add dependencies to graph.
+            foreach (var variable in formula.GetVariables())
+            {
+                _formulaCellDependencyGraph.AddDependency(variable, name);
+            }
+
+            var cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            cellsToRecalculate.Remove(name);
+            return cellsToRecalculate;
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Uses the dependency graph to find dependent cells.
+        /// </summary>
+        /// <param name="name">The name of the cell of which to find dependents.</param>
+        /// <returns>The direct dependents of the given cell, if any.</returns>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            return null;
+            if(name == null)
+                throw new ArgumentNullException();
+
+            if(!IsCellNameValid(name))
+                throw new InvalidNameException();
+
+            return _formulaCellDependencyGraph.GetDependents(name);
         }
 
         /// <summary>

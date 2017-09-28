@@ -12,6 +12,7 @@ namespace SpreadsheetTests
     //TODO: Test get null/invalid cells
     //TODO: Test get direct dependents with null/invalid name
     //TODO: Test circular dependency when setting Formula content
+    //TODO: Test setting a cell which used to be Formula, make sure dependency is gone
 
     [TestClass]
     public class SpreadsheetTests
@@ -229,15 +230,15 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // One cell, no dependencies
-            CollectionAssert.AreEqual(new string[] { }, spreadsheet.SetCellContents("a1", 10d).ToArray());
+            CollectionAssert.AreEqual(new string[] { }, spreadsheet.SetCellContents("a1", 10d).ToArray(), "Dependencies were returned when none should have been found.");
 
             // Direct dependency
             spreadsheet.SetCellContents("a2", new Formula("a1 + 5"));
-            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray());
+            CollectionAssert.AreEqual(new[] {"a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(), "The direct dependencies returned did not match.");
 
             // Indirect dependency
             spreadsheet.SetCellContents("a3", new Formula("a2 + 5"));
-            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(), "The direct and indirect dependencies returned did not match.");
         }
     }
 }
