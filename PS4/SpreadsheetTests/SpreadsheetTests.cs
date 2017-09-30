@@ -8,6 +8,10 @@ using SS;
 
 namespace SpreadsheetTests
 {
+    /// <summary>
+    /// Tests for the implementation of the AbstractSpreadsheet class authored by Mitch Talmadge.
+    /// </summary>
+    /// <author>Mitch Talmadge, u1031378</author>
     [TestClass]
     public class SpreadsheetTests
     {
@@ -246,93 +250,41 @@ namespace SpreadsheetTests
 
             // The try catch is needed because private objects will throw TargetInvocationExceptions which contain the original exception.
             Assert.ThrowsException<ArgumentNullException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", new object[] {null});
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() =>
+                    privateObject.Invoke("GetDirectDependents", new object[] {null})));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "")));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "5A");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "5A")));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "a!1");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "a!1")));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "_a1-2");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "_a1-2")));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "()");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "()")));
             Assert.ThrowsException<InvalidNameException>(() =>
-            {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", "(5 + 6)");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", "(5 + 6)")));
             Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() => privateObject.Invoke("GetDirectDependents", " a1 ")));
+        }
+
+        /// <summary>
+        /// Convenience method for throwing the base exception of a TargetInvocationException that takes place
+        /// when an exception occurs during a PrivateObject invokation.
+        /// 
+        /// Useful for Assert.ThrowsException to catch the most specific exception thrown.
+        /// </summary>
+        /// <param name="action"></param>
+        private static void ThrowPrivateObjectBaseException(Func<object> action)
+        {
+            try
             {
-                try
-                {
-                    return privateObject.Invoke("GetDirectDependents", " a1 ");
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw e.GetBaseException();
-                }
-            });
+                action();
+            }
+            catch (TargetInvocationException e)
+            {
+                throw e.GetBaseException();
+            }
         }
 
         /// <summary>
@@ -344,7 +296,7 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // One cell, no dependencies
-            CollectionAssert.AreEqual(new[] { "a1" }, spreadsheet.SetCellContents("a1", 10d).ToArray(),
+            CollectionAssert.AreEqual(new[] {"a1"}, spreadsheet.SetCellContents("a1", 10d).ToArray(),
                 "Dependencies were returned when none should have been found.");
 
             // Direct dependency
@@ -409,16 +361,19 @@ namespace SpreadsheetTests
 
             // Replace a1 with double; a1 should no longer depend on a2
             spreadsheet.SetCellContents("a1", 5d);
-            CollectionAssert.AreEquivalent(new[] { "a2" }, spreadsheet.SetCellContents("a2", 5d).ToArray(), "Direct dependency was not removed.");
+            CollectionAssert.AreEquivalent(new[] {"a2"}, spreadsheet.SetCellContents("a2", 5d).ToArray(),
+                "Direct dependency was not removed.");
 
             // Create indirect dependency: a3 depends on a1 via a2.
             spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
-            CollectionAssert.AreEquivalent(new[] { "a1", "a2" }, spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
-            CollectionAssert.AreEquivalent(new[] { "a1", "a2", "a3" }, spreadsheet.SetCellContents("a3", 10d).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2"},
+                spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"}, spreadsheet.SetCellContents("a3", 10d).ToArray());
 
             // Replace a2 with double; a1 should no longer depend on a3.
             spreadsheet.SetCellContents("a2", 10d);
-            CollectionAssert.AreEquivalent(new[] { "a3" }, spreadsheet.SetCellContents("a3", "cat").ToArray(), "Indirect dependency was not removed.");
+            CollectionAssert.AreEquivalent(new[] {"a3"}, spreadsheet.SetCellContents("a3", "cat").ToArray(),
+                "Indirect dependency was not removed.");
         }
     }
 }
