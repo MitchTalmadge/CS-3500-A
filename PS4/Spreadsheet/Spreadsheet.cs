@@ -24,6 +24,23 @@ namespace SS
         /// </summary>
         private readonly DependencyGraph _formulaCellDependencyGraph = new DependencyGraph();
 
+        public override bool Changed { get; protected set; }
+
+        public override string GetSavedVersion(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Save(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetCellValue(string name)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <inheritdoc />
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
@@ -46,8 +63,13 @@ namespace SS
             return !_cells.TryGetValue(name, out var cell) ? "" : cell.Content;
         }
 
+        public override ISet<string> SetContentsOfCell(string name, string content)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <inheritdoc />
-        public override ISet<string> SetCellContents(string name, double number)
+        protected override ISet<string> SetCellContents(string name, double number)
         {
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
@@ -56,7 +78,7 @@ namespace SS
         }
 
         /// <inheritdoc />
-        public override ISet<string> SetCellContents(string name, string text)
+        protected override ISet<string> SetCellContents(string name, string text)
         {
             // Check name validity
             if (name == null || !IsCellNameValid(name))
@@ -70,7 +92,7 @@ namespace SS
         }
 
         /// <inheritdoc />
-        public override ISet<string> SetCellContents(string name, Formula formula)
+        protected override ISet<string> SetCellContents(string name, Formula formula)
         {
             if (name == null || !IsCellNameValid(name))
                 throw new InvalidNameException();
@@ -163,6 +185,10 @@ namespace SS
         {
             const string variablePattern = @"^[a-zA-Z_](?: [a-zA-Z_]|\d)*$";
             return Regex.IsMatch(name, variablePattern, RegexOptions.IgnorePatternWhitespace);
+        }
+
+        public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version)
+        {
         }
     }
 }
