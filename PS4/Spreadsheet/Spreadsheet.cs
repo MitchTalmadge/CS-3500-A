@@ -24,6 +24,7 @@ namespace SS
         /// </summary>
         private readonly DependencyGraph _formulaCellDependencyGraph = new DependencyGraph();
 
+        /// <inheritdoc />
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
             // Copy the cells to a new array.
@@ -34,6 +35,7 @@ namespace SS
             return cells;
         }
 
+        /// <inheritdoc />
         public override object GetCellContents(string name)
         {
             // Check name validity
@@ -44,6 +46,7 @@ namespace SS
             return !_cells.TryGetValue(name, out var cell) ? "" : cell.Content;
         }
 
+        /// <inheritdoc />
         public override ISet<string> SetCellContents(string name, double number)
         {
             if (name == null || !IsCellNameValid(name))
@@ -52,6 +55,7 @@ namespace SS
             return UpdateCell(name, number);
         }
 
+        /// <inheritdoc />
         public override ISet<string> SetCellContents(string name, string text)
         {
             // Check name validity
@@ -65,6 +69,7 @@ namespace SS
             return UpdateCell(name, text);
         }
 
+        /// <inheritdoc />
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
             if (name == null || !IsCellNameValid(name))
