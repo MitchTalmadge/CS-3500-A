@@ -26,6 +26,26 @@ namespace SS
 
         public override bool Changed { get; protected set; }
 
+        public Spreadsheet() : this(s => true, s => s, "default")
+        {
+        }
+
+        public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid,
+            normalize, version)
+        {
+        }
+
+        public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
+            : base(isValid, normalize, version)
+        {
+            // Make sure version of file matches version provided
+            if (GetSavedVersion(filePath) != version)
+            {
+                throw new SpreadsheetReadWriteException(
+                    "The provided version does not match the version of the passed in file.");
+            }
+        }
+
         public override string GetSavedVersion(string filename)
         {
             throw new NotImplementedException();
@@ -38,7 +58,38 @@ namespace SS
 
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            if (name == null)
+                throw new InvalidNameException();
+
+            name = Normalize(name);
+            if (!IsCellNameValid(name) && !IsValid(name))
+                throw new InvalidNameException();
+
+            // Return the cell's Evaluate result if it is in the dictionary, or "" if it is not.
+            return _cells.TryGetValue(name, out var cell) ? cell.Evaluate(LookupValue) : "";
+        }
+
+        /// <summary>
+        /// "Looks up" a cell value, used when evaluating cells.
+        /// If the cell evaluates to a string, will throw an ArgumentException.
+        /// </summary>
+        /// <param name="name">The name of the cell to look up.</param>
+        /// <returns>The double value of the cell provided.</returns>
+        private double LookupValue(string name)
+        {
+            // If the cell is not in the dictionary, it would be an empty string. Strings are not allowed.
+            if (!_cells.TryGetValue(name, out var cell))
+                throw new ArgumentException();
+
+            // Perform evaluation.
+            var value = cell.Evaluate(LookupValue);
+
+            // Strings are not allowed.
+            if (value is string)
+                throw new ArgumentException();
+
+            // If it is not a string, it must be a double.
+            return (double) value;
         }
 
         /// <inheritdoc />
@@ -55,8 +106,11 @@ namespace SS
         /// <inheritdoc />
         public override object GetCellContents(string name)
         {
-            // Check name validity
-            if (name == null || !IsCellNameValid(name))
+            if (name == null)
+                throw new InvalidNameException();
+
+            name = Normalize(name);
+            if (!IsCellNameValid(name) && !IsValid(name))
                 throw new InvalidNameException();
 
             // Check if the cell has any contents
@@ -65,41 +119,48 @@ namespace SS
 
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
-            throw new NotImplementedException();
+            // Check null values
+            if (content == null)
+                throw new ArgumentNullException(nameof(content));
+            if (name == null)
+                throw new InvalidNameException();
+
+            // Check normalized name for validity.
+            name = Normalize(name);
+            if (!IsCellNameValid(name) && !IsValid(name))
+                throw new InvalidNameException();
+
+            // Double parse
+            if (double.TryParse(content, out var parsed))
+            {
+                return SetCellContents(name, parsed);
+            }
+
+            // Formula parse
+            if (content.StartsWith("="))
+            {
+                return SetCellContents(name, new Formula(content.Substring(1), Normalize, IsValid));
+            }
+
+            // Anything else is string
+            return SetCellContents(name, content);
         }
 
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || !IsCellNameValid(name))
-                throw new InvalidNameException();
-
             return UpdateCell(name, number);
         }
 
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, string text)
         {
-            // Check name validity
-            if (name == null || !IsCellNameValid(name))
-                throw new InvalidNameException();
-
-            // Text cannot be null.
-            if (text == null)
-                throw new ArgumentNullException();
-
             return UpdateCell(name, text);
         }
 
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null || !IsCellNameValid(name))
-                throw new InvalidNameException();
-
-            if (formula == null)
-                throw new ArgumentNullException();
-
             return UpdateCell(name, formula);
         }
 
@@ -177,18 +238,14 @@ namespace SS
 
         /// <summary>
         /// Determines if a given cell name is considered syntactically valid.
-        /// Validity means it starts with a letter or underscore, and is followed by 0 or more letters, numbers, or underscores.
+        /// Validity means it starts with 1 or more letters and is followed by 1 or more numbers.
         /// </summary>
         /// <param name="name">The name to parse.</param>
         /// <returns>True if the name is valid.</returns>
         private static bool IsCellNameValid(string name)
         {
-            const string variablePattern = @"^[a-zA-Z_](?: [a-zA-Z_]|\d)*$";
-            return Regex.IsMatch(name, variablePattern, RegexOptions.IgnorePatternWhitespace);
-        }
-
-        public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version)
-        {
+            const string variablePattern = @"^[A-Z]+\d+$";
+            return Regex.IsMatch(name, variablePattern, RegexOptions.IgnoreCase);
         }
     }
 }

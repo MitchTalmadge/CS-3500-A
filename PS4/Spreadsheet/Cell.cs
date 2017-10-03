@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SpreadsheetUtilities;
 
 namespace SS
 {
@@ -29,5 +30,21 @@ namespace SS
         /// May be a double, string, or Formula.
         /// </summary>
         internal object Content { get; }
+
+        /// <summary>
+        /// Evaluates the content of the cell. 
+        /// Strings and doubles return themselves, Formula returns its evaluated double value or a FormulaError.
+        /// </summary>
+        /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
+        /// <returns>The evaluated content of the cell.</returns>
+        public object Evaluate(Func<string, double> lookup)
+        {
+            // Check if the content is a formula, which must be evaluated with the Formula#Evaluate method.
+            if (Content is Formula formula)
+                return formula.Evaluate(lookup);
+
+            // Otherwise, doubles and strings can simply be returned.
+            return Content;
+        }
     }
 }
