@@ -65,13 +65,13 @@ namespace SS
             if (!IsCellNameValid(name) && !IsValid(name))
                 throw new InvalidNameException();
 
-            // Return the cell's Evaluate result if it is in the dictionary, or "" if it is not.
-            return _cells.TryGetValue(name, out var cell) ? cell.Evaluate(LookupValue) : "";
+            // Return the cell's value if it's in the dictionary, or "" if it's not.
+            return _cells.TryGetValue(name, out var cell) ? cell.GetValue(LookupValue) : "";
         }
 
         /// <summary>
-        /// "Looks up" a cell value, used when evaluating cells.
-        /// If the cell evaluates to a string, will throw an ArgumentException.
+        /// "Looks up" a cell's value and returns it as a double. Used when evaluating cells.
+        /// If the cell evaluates to a string or FormulaError, will throw an ArgumentException.
         /// </summary>
         /// <param name="name">The name of the cell to look up.</param>
         /// <returns>The double value of the cell provided.</returns>
@@ -81,8 +81,8 @@ namespace SS
             if (!_cells.TryGetValue(name, out var cell))
                 throw new ArgumentException();
 
-            // Perform evaluation.
-            var value = cell.Evaluate(LookupValue);
+            // Get the cell's value.
+            var value = cell.GetValue(LookupValue);
 
             // Strings and errors are not allowed.
             if (value is string || value is FormulaError)
@@ -206,15 +206,22 @@ namespace SS
                 cellsToRecalculate = new HashSet<string>(GetCellsToRecalculate(name));
             }
 
-            // Text cells must be checked carefully because setting a cell to empty text removes it from the dictionary.
             if (contents is string text && text == "")
             {
+                // Text cells must be checked carefully because setting a cell to empty text 
+                // removes it from the dictionary.
                 _cells.Remove(name);
-                return cellsToRecalculate;
+            }
+            else
+            {
+                // Add the cell to the dictionary.
+                _cells[name] = new Cell(contents);
             }
 
-            // Add the cell to the dictionary.
-            _cells[name] = new Cell(contents);
+            // Clear the value of every cell to be re-calculated.
+            foreach (var cellName in cellsToRecalculate)
+                if (_cells.TryGetValue(cellName, out var cell))
+                    cell.ClearValue();
 
             return cellsToRecalculate;
         }

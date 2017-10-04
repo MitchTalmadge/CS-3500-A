@@ -20,7 +20,7 @@ namespace SS
         /// The original contents of the Cell (not evaluated).
         /// Should be either a double, string, or Formula.
         /// </param>
-        public Cell(object content)
+        internal Cell(object content)
         {
             Content = content;
         }
@@ -31,20 +31,46 @@ namespace SS
         /// </summary>
         internal object Content { get; }
 
+        internal object Value;
+
         /// <summary>
-        /// Evaluates the content of the cell. 
-        /// Strings and doubles return themselves, Formula returns its evaluated double value or a FormulaError.
+        /// Gets the value of this cell. 
+        /// If the value has not been calculated yet, will perform calculations and save the value 
+        /// for quicker access next time.
         /// </summary>
         /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
-        /// <returns>The evaluated content of the cell.</returns>
-        public object Evaluate(Func<string, double> lookup)
+        /// <returns>The value of this cell.</returns>
+        internal object GetValue(Func<string, double> lookup)
+        {
+            // Return stored value if not null.
+            if (Value != null)
+                return Value;
+
+            // Otherwise, recalculate.
+            CalculateValue(lookup);
+            return Value;
+        }
+
+        /// <summary>
+        /// Clears the value of this cell so that it will be re-calculated next time it is requested.
+        /// </summary>
+        internal void ClearValue()
+        {
+            Value = null;
+        }
+
+        /// <summary>
+        /// Calculates the value of this cell and stores it in the Value field.
+        /// </summary>
+        /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
+        private void CalculateValue(Func<string, double> lookup)
         {
             // Check if the content is a formula, which must be evaluated with the Formula#Evaluate method.
             if (Content is Formula formula)
-                return formula.Evaluate(lookup);
+                Value = formula.Evaluate(lookup);
 
-            // Otherwise, doubles and strings can simply be returned.
-            return Content;
+            // Doubles and strings are simply themselves as values.
+            Value = Content;
         }
     }
 }
