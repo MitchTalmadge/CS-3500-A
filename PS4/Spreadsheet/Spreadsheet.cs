@@ -84,8 +84,8 @@ namespace SS
             // Perform evaluation.
             var value = cell.Evaluate(LookupValue);
 
-            // Strings are not allowed.
-            if (value is string)
+            // Strings and errors are not allowed.
+            if (value is string || value is FormulaError)
                 throw new ArgumentException();
 
             // If it is not a string, it must be a double.
