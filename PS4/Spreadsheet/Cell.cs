@@ -49,7 +49,10 @@ namespace SS
         {
             // Check if the content is a formula, which must be evaluated with the Formula#Evaluate method.
             if (Content is Formula formula)
+            {
                 Value = formula.Evaluate(_lookup);
+                return;
+            }
 
             // Doubles and strings are simply themselves as values.
             Value = Content;

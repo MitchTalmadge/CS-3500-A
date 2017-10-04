@@ -25,25 +25,25 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Set Lowercase
-            spreadsheet.SetCellContents("a1", 1d);
-            spreadsheet.SetCellContents("cat", 2d);
-            spreadsheet.SetCellContents("alt_f4", 3d);
+            spreadsheet.SetContentsOfCell("a1", "1");
+            spreadsheet.SetContentsOfCell("b5", "2");
+            spreadsheet.SetContentsOfCell("f4", "3");
             Assert.AreEqual(1d, spreadsheet.GetCellContents("a1"), "Could not set a1");
-            Assert.AreEqual(2d, spreadsheet.GetCellContents("cat"), "Could not set cat");
-            Assert.AreEqual(3d, spreadsheet.GetCellContents("alt_f4"), "Could not set alt_f4");
+            Assert.AreEqual(2d, spreadsheet.GetCellContents("b5"), "Could not set b5");
+            Assert.AreEqual(3d, spreadsheet.GetCellContents("f4"), "Could not set f4");
 
             // Set Uppercase
-            spreadsheet.SetCellContents("A1", 4d);
-            spreadsheet.SetCellContents("CAT", 5d);
-            spreadsheet.SetCellContents("ALT_F4", 6d);
+            spreadsheet.SetContentsOfCell("A1", "4");
+            spreadsheet.SetContentsOfCell("B5", "5");
+            spreadsheet.SetContentsOfCell("F4", "6");
             Assert.AreEqual(4d, spreadsheet.GetCellContents("A1"), "Could not set A1");
-            Assert.AreEqual(5d, spreadsheet.GetCellContents("CAT"), "Could not set CAT");
-            Assert.AreEqual(6d, spreadsheet.GetCellContents("ALT_F4"), "Could not set ALT_F4");
+            Assert.AreEqual(5d, spreadsheet.GetCellContents("B5"), "Could not set B5");
+            Assert.AreEqual(6d, spreadsheet.GetCellContents("F4"), "Could not set F4");
 
             // Check for collisions
             Assert.AreEqual(1d, spreadsheet.GetCellContents("a1"), "a1 was changed!");
-            Assert.AreEqual(2d, spreadsheet.GetCellContents("cat"), "cat was changed!");
-            Assert.AreEqual(3d, spreadsheet.GetCellContents("alt_f4"), "alt_f4 was changed!");
+            Assert.AreEqual(2d, spreadsheet.GetCellContents("b5"), "b5 was changed!");
+            Assert.AreEqual(3d, spreadsheet.GetCellContents("f4"), "f4 was changed!");
         }
 
         /// <summary>
@@ -55,15 +55,15 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Set once
-            spreadsheet.SetCellContents("a1", 10d);
+            spreadsheet.SetContentsOfCell("a1", "10");
             Assert.AreEqual(10d, spreadsheet.GetCellContents("a1"), "Could not set a1");
 
             // Replace
-            spreadsheet.SetCellContents("a1", 5d);
+            spreadsheet.SetContentsOfCell("a1", "5");
             Assert.AreEqual(5d, spreadsheet.GetCellContents("a1"), "Could not replace a1");
 
             // Set another cell
-            spreadsheet.SetCellContents("a2", 15d);
+            spreadsheet.SetContentsOfCell("a2", "15");
             Assert.AreEqual(15d, spreadsheet.GetCellContents("a2"), "Could not set a2");
 
             // Make sure it didn't collide with previous cell
@@ -79,15 +79,15 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Set once
-            spreadsheet.SetCellContents("a1", "cat");
+            spreadsheet.SetContentsOfCell("a1", "cat");
             Assert.AreEqual("cat", spreadsheet.GetCellContents("a1"), "Could not set a1");
 
             // Replace
-            spreadsheet.SetCellContents("a1", "dog");
+            spreadsheet.SetContentsOfCell("a1", "dog");
             Assert.AreEqual("dog", spreadsheet.GetCellContents("a1"), "Could not replace a1");
 
             // Set another cell
-            spreadsheet.SetCellContents("a2", "pig");
+            spreadsheet.SetContentsOfCell("a2", "pig");
             Assert.AreEqual("pig", spreadsheet.GetCellContents("a2"), "Could not set a2");
 
             // Make sure it didn't collide with previous cell
@@ -103,15 +103,15 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Set once
-            spreadsheet.SetCellContents("a1", new Formula("1 + 5"));
+            spreadsheet.SetContentsOfCell("a1", "=1 + 5");
             Assert.AreEqual(new Formula("1 + 5"), spreadsheet.GetCellContents("a1"), "Could not set a1");
 
             // Replace
-            spreadsheet.SetCellContents("a1", new Formula("5 * (4 + 5)"));
+            spreadsheet.SetContentsOfCell("a1", "=5 * (4 + 5)");
             Assert.AreEqual(new Formula("5 * (4 + 5)"), spreadsheet.GetCellContents("a1"), "Could not replace a1");
 
             // Set another cell
-            spreadsheet.SetCellContents("a2", new Formula("11 - B4 + (6 * C3)"));
+            spreadsheet.SetContentsOfCell("a2", "=11 - B4 + (6 * C3)");
             Assert.AreEqual(new Formula("11 - B4 + (6 * C3)"), spreadsheet.GetCellContents("a2"), "Could not set a2");
 
             // Make sure it didn't collide with previous cell
@@ -128,20 +128,20 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Invalid name format
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("AB!", "test"));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("A B", "test"));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("", "test"));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("6a", 0d));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("(d)", 0d));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents("_____-___", 0d));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("AB!", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("A B", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("", "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("6a", "0"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("(d)", "0"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell("_____-___", "0"));
             Assert.ThrowsException<InvalidNameException>(
-                () => spreadsheet.SetCellContents("d-5", new Formula("1 + 2")));
+                () => spreadsheet.SetContentsOfCell("d-5", "=1 + 2"));
 
             // Null name
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents(null, "test"));
-            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetCellContents(null, 0d));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell(null, "test"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.SetContentsOfCell(null, "0"));
             Assert.ThrowsException<InvalidNameException>(() =>
-                spreadsheet.SetCellContents(null, new Formula("1 + 2")));
+                spreadsheet.SetContentsOfCell(null, "=1 + 2"));
         }
 
         /// <summary>
@@ -152,8 +152,7 @@ namespace SpreadsheetTests
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("a1", (string) null));
-            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetCellContents("a1", (Formula) null));
+            Assert.ThrowsException<ArgumentNullException>(() => spreadsheet.SetContentsOfCell("a1", null));
         }
 
         /// <summary>
@@ -165,8 +164,8 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
-            Assert.AreEqual("", spreadsheet.GetCellContents("nathan_milot"));
-            Assert.AreEqual("", spreadsheet.GetCellContents("hannah_potter"));
+            Assert.AreEqual("", spreadsheet.GetCellContents("b5"));
+            Assert.AreEqual("", spreadsheet.GetCellContents("J9"));
         }
 
         /// <summary>
@@ -185,6 +184,9 @@ namespace SpreadsheetTests
             Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("()"));
             Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("(5 + 6)"));
             Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents(" a1 "));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("a1a"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("_d5"));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellContents("john_doe_5"));
         }
 
         /// <summary>
@@ -199,19 +201,19 @@ namespace SpreadsheetTests
             CollectionAssert.AreEqual(new string[0], spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
 
             // Add some cells
-            spreadsheet.SetCellContents("a1", 1d);
-            spreadsheet.SetCellContents("cat", 2d);
-            spreadsheet.SetCellContents("alt_f4", 3d);
+            spreadsheet.SetContentsOfCell("a1", "1");
+            spreadsheet.SetContentsOfCell("b5", "2");
+            spreadsheet.SetContentsOfCell("f4", "3");
 
             // Check for the added cells
-            CollectionAssert.AreEquivalent(new[] {"a1", "cat", "alt_f4"},
+            CollectionAssert.AreEquivalent(new[] {"a1", "b5", "f4"},
                 spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
 
             // Clear a cell
-            spreadsheet.SetCellContents("cat", "");
+            spreadsheet.SetContentsOfCell("b5", "");
 
             // Check that the cell is no longer returned
-            CollectionAssert.AreEquivalent(new[] {"a1", "alt_f4"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "f4"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
         }
 
         /// <summary>
@@ -223,15 +225,15 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // The cell to check.
-            spreadsheet.SetCellContents("a1", 10d);
+            spreadsheet.SetContentsOfCell("a1", "10");
 
             // Those which depend on a1.
-            spreadsheet.SetCellContents("b1", new Formula("a1 + c2"));
-            spreadsheet.SetCellContents("d1", new Formula("10 + (5 * a1)"));
+            spreadsheet.SetContentsOfCell("b1", "=a1 + c2");
+            spreadsheet.SetContentsOfCell("d1", "=10 + (5 * a1)");
 
             // Those which do not depend on a1
-            spreadsheet.SetCellContents("c2", new Formula("5 + 10"));
-            spreadsheet.SetCellContents("daniel_kopta", new Formula("b1 + d1"));
+            spreadsheet.SetContentsOfCell("c2", "=5 + 10");
+            spreadsheet.SetContentsOfCell("a9", "=b1 + d1");
 
             // Check direct dependents. (Called using a PrivateObject)
             var dependents = (IEnumerable<string>) new PrivateObject(spreadsheet).Invoke("GetDirectDependents", "a1");
@@ -296,17 +298,17 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // One cell, no dependencies
-            CollectionAssert.AreEqual(new[] {"a1"}, spreadsheet.SetCellContents("a1", 10d).ToArray(),
+            CollectionAssert.AreEqual(new[] {"a1"}, spreadsheet.SetContentsOfCell("a1", "10").ToArray(),
                 "Dependencies were returned when none should have been found.");
 
             // Direct dependency
-            spreadsheet.SetCellContents("a2", new Formula("a1 + 5"));
-            CollectionAssert.AreEqual(new[] {"a1", "a2"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+            spreadsheet.SetContentsOfCell("a2", "=a1 + 5");
+            CollectionAssert.AreEqual(new[] {"a1", "a2"}, spreadsheet.SetContentsOfCell("a1", "5").ToArray(),
                 "The direct dependencies returned did not match.");
 
             // Indirect dependency
-            spreadsheet.SetCellContents("a3", new Formula("a2 + 5"));
-            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"}, spreadsheet.SetCellContents("a1", 5d).ToArray(),
+            spreadsheet.SetContentsOfCell("a3", "=a2 + 5");
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"}, spreadsheet.SetContentsOfCell("a1", "5").ToArray(),
                 "The direct and indirect dependencies returned did not match.");
         }
 
@@ -319,12 +321,12 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // Add cell
-            spreadsheet.SetCellContents("a1", "doggo");
+            spreadsheet.SetContentsOfCell("a1", "doggo");
             CollectionAssert.AreEquivalent(new[] {"a1"}, spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
             Assert.AreEqual("doggo", spreadsheet.GetCellContents("a1"));
 
             // Remove cell
-            spreadsheet.SetCellContents("a1", "");
+            spreadsheet.SetContentsOfCell("a1", "");
             CollectionAssert.AreEquivalent(new string[0], spreadsheet.GetNamesOfAllNonemptyCells().ToArray());
             Assert.AreEqual("", spreadsheet.GetCellContents("a1"));
         }
@@ -336,15 +338,16 @@ namespace SpreadsheetTests
         public void TestCircularDependency()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
-            spreadsheet.SetCellContents("a1", new Formula("a3 * d3"));
-            spreadsheet.SetCellContents("a3", new Formula("a2 - 5"));
+            spreadsheet.SetContentsOfCell("a1", "=a3 * d3");
+            spreadsheet.SetContentsOfCell("a3", "=a2 - 5");
 
             // Adding this cell will cause the circular dependency.
-            Assert.ThrowsException<CircularException>(() => spreadsheet.SetCellContents("a2", new Formula("a1 + d5")));
+            Assert.ThrowsException<CircularException>(() =>
+                spreadsheet.SetContentsOfCell("a2", "=a1 + d5"));
 
             // Make sure nothing was changed
             Assert.AreEqual("", spreadsheet.GetCellContents("a2"));
-            CollectionAssert.AreEquivalent(new[] {"d5"}, spreadsheet.SetCellContents("d5", 10d).ToArray());
+            CollectionAssert.AreEquivalent(new[] {"d5"}, spreadsheet.SetContentsOfCell("d5", "10").ToArray());
         }
 
         /// <summary>
@@ -356,23 +359,24 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
             // a2 depends on a1
-            spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
-            CollectionAssert.AreEquivalent(new[] {"a1", "a2"}, spreadsheet.SetCellContents("a2", 10d).ToArray());
+            spreadsheet.SetContentsOfCell("a1", "=a2 + 0");
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2"}, spreadsheet.SetContentsOfCell("a2", "10").ToArray());
 
             // Replace a1 with double; a1 should no longer depend on a2
-            spreadsheet.SetCellContents("a1", 5d);
-            CollectionAssert.AreEquivalent(new[] {"a2"}, spreadsheet.SetCellContents("a2", 5d).ToArray(),
+            spreadsheet.SetContentsOfCell("a1", "5");
+            CollectionAssert.AreEquivalent(new[] {"a2"}, spreadsheet.SetContentsOfCell("a2", "5").ToArray(),
                 "Direct dependency was not removed.");
 
             // Create indirect dependency: a3 depends on a1 via a2.
-            spreadsheet.SetCellContents("a1", new Formula("a2 + 0"));
+            spreadsheet.SetContentsOfCell("a1", "=a2 + 0");
             CollectionAssert.AreEquivalent(new[] {"a1", "a2"},
-                spreadsheet.SetCellContents("a2", new Formula("a3 + 0")).ToArray());
-            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"}, spreadsheet.SetCellContents("a3", 10d).ToArray());
+                spreadsheet.SetContentsOfCell("a2", "=a3 + 0").ToArray());
+            CollectionAssert.AreEquivalent(new[] {"a1", "a2", "a3"},
+                spreadsheet.SetContentsOfCell("a3", "10").ToArray());
 
             // Replace a2 with double; a1 should no longer depend on a3.
-            spreadsheet.SetCellContents("a2", 10d);
-            CollectionAssert.AreEquivalent(new[] {"a3"}, spreadsheet.SetCellContents("a3", "cat").ToArray(),
+            spreadsheet.SetContentsOfCell("a2", "10");
+            CollectionAssert.AreEquivalent(new[] {"a3"}, spreadsheet.SetContentsOfCell("a3", "cat").ToArray(),
                 "Indirect dependency was not removed.");
         }
     }

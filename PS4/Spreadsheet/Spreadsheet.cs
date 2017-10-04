@@ -62,7 +62,7 @@ namespace SS
                 throw new InvalidNameException();
 
             name = Normalize(name);
-            if (!IsCellNameValid(name) && !IsValid(name))
+            if (!IsCellNameValid(name))
                 throw new InvalidNameException();
 
             // Return the cell's value if it's in the dictionary, or "" if it's not.
@@ -110,7 +110,7 @@ namespace SS
                 throw new InvalidNameException();
 
             name = Normalize(name);
-            if (!IsCellNameValid(name) && !IsValid(name))
+            if (!IsCellNameValid(name))
                 throw new InvalidNameException();
 
             // Check if the cell has any contents
@@ -127,7 +127,7 @@ namespace SS
 
             // Check normalized name for validity.
             name = Normalize(name);
-            if (!IsCellNameValid(name) && !IsValid(name))
+            if (!IsCellNameValid(name))
                 throw new InvalidNameException();
 
             // Double parse
@@ -255,15 +255,14 @@ namespace SS
         }
 
         /// <summary>
-        /// Determines if a given cell name is considered syntactically valid.
-        /// Validity means it starts with 1 or more letters and is followed by 1 or more numbers.
+        /// Determines if a given cell name is considered valid both syntactically and via the IsValid delegate.
         /// </summary>
-        /// <param name="name">The name to parse.</param>
+        /// <param name="name">The name to parse. Important: Should be normalized first!</param>
         /// <returns>True if the name is valid.</returns>
-        private static bool IsCellNameValid(string name)
+        private bool IsCellNameValid(string name)
         {
             const string variablePattern = @"^[A-Z]+\d+$";
-            return Regex.IsMatch(name, variablePattern, RegexOptions.IgnoreCase);
+            return Regex.IsMatch(name, variablePattern, RegexOptions.IgnoreCase) && IsValid(name);
         }
     }
 }
