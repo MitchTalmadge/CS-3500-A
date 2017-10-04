@@ -66,7 +66,7 @@ namespace SS
                 throw new InvalidNameException();
 
             // Return the cell's value if it's in the dictionary, or "" if it's not.
-            return _cells.TryGetValue(name, out var cell) ? cell.GetValue(LookupValue) : "";
+            return _cells.TryGetValue(name, out var cell) ? cell.Value : "";
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace SS
                 throw new ArgumentException();
 
             // Get the cell's value.
-            var value = cell.GetValue(LookupValue);
+            var value = cell.Value;
 
             // Strings and errors are not allowed.
             if (value is string || value is FormulaError)
