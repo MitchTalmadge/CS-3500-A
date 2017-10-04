@@ -14,15 +14,20 @@ namespace SS
     internal class Cell
     {
         /// <summary>
-        /// Constructs a Cell with the given contents.
+        /// Constructs a Cell with the given contents, and using the given lookup for evaluation.
         /// </summary>
         /// <param name="content">
         /// The original contents of the Cell (not evaluated).
         /// Should be either a double, string, or Formula.
         /// </param>
-        internal Cell(object content)
+        /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
+        internal Cell(object content, Func<string, double> lookup)
         {
             Content = content;
+            _lookup = lookup;
+
+            // Perform initial evaluation.
+            RecalculateValue();
         }
 
         /// <summary>
@@ -31,43 +36,26 @@ namespace SS
         /// </summary>
         internal object Content { get; }
 
-        internal object Value;
+        /// <summary>
+        /// Represents the evaluated content of this Cell.
+        /// May be a double, string, or FormulaError.
+        /// </summary>
+        internal object Value { get; private set; }
 
         /// <summary>
-        /// Gets the value of this cell. 
-        /// If the value has not been calculated yet, will perform calculations and save the value 
-        /// for quicker access next time.
+        /// The lookup to use when evaluating Formulas.
         /// </summary>
-        /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
-        /// <returns>The value of this cell.</returns>
-        internal object GetValue(Func<string, double> lookup)
-        {
-            // Return stored value if not null.
-            if (Value != null)
-                return Value;
-
-            // Otherwise, recalculate.
-            CalculateValue(lookup);
-            return Value;
-        }
+        private readonly Func<string, double> _lookup;
 
         /// <summary>
-        /// Clears the value of this cell so that it will be re-calculated next time it is requested.
+        /// Re-calculates the value of this cell.
+        /// Use this when dependencies of the cell change.
         /// </summary>
-        internal void ClearValue()
-        {
-            Value = null;
-        }
-
-        /// <summary>
-        /// Calculates the value of this cell and stores it in the Value field.
-        /// </summary>
-        /// <param name="lookup">The lookup to use when evaluating Formulas.</param>
-        private void CalculateValue(Func<string, double> lookup)
+        internal void RecalculateValue()
         {
             // Check if the content is a formula, which must be evaluated with the Formula#Evaluate method.
             if (Content is Formula formula)
-                Value = formula.Evaluate(lookup);
+                Value = formula.Evaluate(_lookup);
 
             // Doubles and strings are simply themselves as values.
             Value = Content;

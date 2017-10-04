@@ -215,13 +215,20 @@ namespace SS
             else
             {
                 // Add the cell to the dictionary.
-                _cells[name] = new Cell(contents);
+                _cells[name] = new Cell(contents, LookupValue);
             }
 
-            // Clear the value of every cell to be re-calculated.
+            // Recalculate all the cells that depend on this cell.
             foreach (var cellName in cellsToRecalculate)
+            {
+                // Don't re-calculate ourselves.
+                if (cellName == name)
+                    continue;
+
+                // Calculate other cells.
                 if (_cells.TryGetValue(cellName, out var cell))
-                    cell.ClearValue();
+                    cell.RecalculateValue();
+            }
 
             return cellsToRecalculate;
         }
