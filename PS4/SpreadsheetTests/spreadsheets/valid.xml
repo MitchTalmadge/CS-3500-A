@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<spreadsheet version="default">
+  <cell>
+    <name>A1</name>
+    <contents>=10 + 5</contents>
+  </cell>
+  <cell>
+    <name>A2</name>
+    <contents>=A1 + 5</contents>
+  </cell>
+  <cell>
+    <name>B9</name>
+    <contents>=A1 + A2</contents>
+  </cell>
+  <cell>
+    <name>AB10</name>
+    <contents>10</contents>
+  </cell>
+  <cell>
+    <name>AB6</name>
+    <contents>Hello World</contents>
+  </cell>
+</spreadsheet>
