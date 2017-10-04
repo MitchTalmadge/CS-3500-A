@@ -14,7 +14,8 @@ namespace SS
     internal class Cell
     {
         /// <summary>
-        /// Constructs a Cell with the given contents, and using the given lookup for evaluation.
+        /// Constructs a Cell with the given contents,
+        /// and using the given lookup for evaluation.
         /// </summary>
         /// <param name="content">
         /// The original contents of the Cell (not evaluated).
@@ -25,16 +26,13 @@ namespace SS
         {
             Content = content;
             _lookup = lookup;
-
-            // Perform initial evaluation.
-            RecalculateValue();
         }
 
         /// <summary>
         /// Represents the original, non-evaluated content of this Cell.
         /// May be a double, string, or Formula.
         /// </summary>
-        internal object Content { get; }
+        internal object Content { get; set; }
 
         /// <summary>
         /// Represents the evaluated content of this Cell.

@@ -208,29 +208,33 @@ namespace SS
 
             if (contents is string text && text == "")
             {
-                // Text cells must be checked carefully because setting a cell to empty text 
-                // removes it from the dictionary.
+                // If text is empty, the cell should be removed from the dictionary.
                 _cells.Remove(name);
             }
             else
             {
-                // Add the cell to the dictionary.
-                _cells[name] = new Cell(contents, LookupValue);
+                // Add a new cell to the dictionary, or update the existing cell.
+                if (_cells.TryGetValue(name, out var cell))
+                    cell.Content = contents;
+                else
+                    _cells[name] = new Cell(contents, LookupValue);
             }
 
-            // Recalculate all the cells that depend on this cell.
-            foreach (var cellName in cellsToRecalculate)
-            {
-                // Don't re-calculate ourselves.
-                if (cellName == name)
-                    continue;
+            RecalculateCells(cellsToRecalculate);
+            return cellsToRecalculate;
+        }
 
-                // Calculate other cells.
+        /// <summary>
+        /// Recalculates all the cells with the names in the provided IEnumerable. 
+        /// </summary>
+        /// <param name="cellNames">The names of the cells to recalculate, in order of calculation.</param>
+        private void RecalculateCells(IEnumerable<string> cellNames)
+        {
+            foreach (var cellName in cellNames)
+            {
                 if (_cells.TryGetValue(cellName, out var cell))
                     cell.RecalculateValue();
             }
-
-            return cellsToRecalculate;
         }
 
         /// <inheritdoc />
