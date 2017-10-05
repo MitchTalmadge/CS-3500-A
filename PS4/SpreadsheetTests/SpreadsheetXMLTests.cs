@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,6 +21,8 @@ namespace SpreadsheetTests
         private readonly Func<string, string> _normalize = s => s;
 
         private const string XmlDir = "spreadsheets/";
+
+        /* ---------------------- LOADING ---------------------- */
 
         [TestMethod]
         public void TestLoadValidFile()
@@ -49,6 +53,14 @@ namespace SpreadsheetTests
                 new Spreadsheet(XmlDir + "overwrite.xml", _isValid, _normalize, "default");
 
             Assert.AreEqual("overwritten", spreadsheet.GetCellValue("A1"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadWrongVersion()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "valid.xml", _isValid, _normalize, "not-default");
         }
 
         [TestMethod]
@@ -119,6 +131,26 @@ namespace SpreadsheetTests
         public void TestEmptyFile()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "empty.xml", _isValid, _normalize, "default");
+        }
+
+        /* ---------------------- SAVING ---------------------- */
+
+        [TestMethod]
+        public void TestSave()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            spreadsheet.SetContentsOfCell("A1", "=10+5");
+            spreadsheet.SetContentsOfCell("A2", "=A1 + 5");
+            spreadsheet.SetContentsOfCell("B9", "=A1 + A2");
+            spreadsheet.SetContentsOfCell("AB10", "10");
+            spreadsheet.SetContentsOfCell("AB6", "Hello World");
+
+            // Prevent test collisions by picking a random file name.
+            var randomName = Guid.NewGuid().ToString("N") + ".xml";
+            spreadsheet.Save(randomName);
+
+            CollectionAssert.AreEqual(File.ReadAllBytes(XmlDir + "valid.xml"), File.ReadAllBytes(randomName));
         }
     }
 }
