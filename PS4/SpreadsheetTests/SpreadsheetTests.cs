@@ -19,7 +19,7 @@ namespace SpreadsheetTests
         //TODO: Test load
         //TODO: Test save
         //TODO: Test re-calculation of cells
-        
+
         /// <summary>
         /// Ensures that contents of cells can be set and retrieved without conflicts when using 
         /// varaible names which only differ in case.
@@ -400,6 +400,40 @@ namespace SpreadsheetTests
             // A2 is set
             spreadsheet.SetContentsOfCell("A2", "10");
             Assert.AreEqual(15d, spreadsheet.GetCellValue("A1"));
+        }
+
+        /// <summary>
+        /// Tests that spreadsheets are marked as changed and unchanged when necessary.
+        /// </summary>
+        [TestMethod]
+        public void TestChanged()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+            Assert.IsFalse(spreadsheet.Changed);
+
+            // Get contents
+            spreadsheet.GetCellContents("A1");
+            Assert.IsFalse(spreadsheet.Changed);
+
+            // Get value
+            spreadsheet.GetCellValue("A1");
+            Assert.IsFalse(spreadsheet.Changed);
+
+            // Get non-empty
+            spreadsheet.GetNamesOfAllNonemptyCells();
+            Assert.IsFalse(spreadsheet.Changed);
+
+            // Save with no changes
+            spreadsheet.Save(Guid.NewGuid().ToString("N"));
+            Assert.IsFalse(spreadsheet.Changed);
+
+            // Set cell
+            spreadsheet.SetContentsOfCell("A1", "dog");
+            Assert.IsTrue(spreadsheet.Changed);
+
+            // Save with changes
+            spreadsheet.Save(Guid.NewGuid().ToString("N"));
+            Assert.IsFalse(spreadsheet.Changed);
         }
     }
 }

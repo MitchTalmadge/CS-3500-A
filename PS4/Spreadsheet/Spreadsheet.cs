@@ -42,6 +42,13 @@ namespace SS
             LoadFile(filePath, version);
         }
 
+        /// <summary>
+        /// Loads the spreadsheet file at the provided location.
+        /// Compares the version within the file to the provided version.
+        /// If anything goes wrong, throws a SpreadsheetReadWriteException.
+        /// </summary>
+        /// <param name="filePath">The path to the file to load.</param>
+        /// <param name="expectedVersion">The spreadsheet version that is expected in the file.</param>
         private void LoadFile(string filePath, string expectedVersion)
         {
             try
