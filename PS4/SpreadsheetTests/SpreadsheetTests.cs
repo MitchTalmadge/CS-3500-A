@@ -424,7 +424,7 @@ namespace SpreadsheetTests
             Assert.IsFalse(spreadsheet.Changed);
 
             // Save with no changes
-            spreadsheet.Save(Guid.NewGuid().ToString("N"));
+            spreadsheet.Save(Guid.NewGuid().ToString("N") + ".xml");
             Assert.IsFalse(spreadsheet.Changed);
 
             // Set cell
@@ -432,7 +432,7 @@ namespace SpreadsheetTests
             Assert.IsTrue(spreadsheet.Changed);
 
             // Save with changes
-            spreadsheet.Save(Guid.NewGuid().ToString("N"));
+            spreadsheet.Save(Guid.NewGuid().ToString("N") + ".xml");
             Assert.IsFalse(spreadsheet.Changed);
         }
     }

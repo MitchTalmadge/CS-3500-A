@@ -173,12 +173,48 @@ namespace SS
 
             using (var writer = XmlWriter.Create(filename, settings))
             {
+                // "<?xml version="1.0" encoding="utf-8" ?>"
                 writer.WriteStartDocument();
 
+                // <spreadsheet> tag and version attribute
+                writer.WriteStartElement("spreadsheet");
+                writer.WriteAttributeString("version", Version);
 
+                // <cell> tags
+                foreach (var cellPair in _cells)
+                {
+                    // <cell>
+                    writer.WriteStartElement("cell");
+
+                    // <name>
+                    writer.WriteStartElement("name");
+                    writer.WriteString(cellPair.Key);
+                    writer.WriteEndElement();
+
+                    // <contents>
+                    writer.WriteStartElement("contents");
+
+                    if (cellPair.Value.Content is Formula formula)
+                        // Formula starts with = character
+                        writer.WriteString("=" + formula);
+                    else
+                        // Doubles and strings can be written as-is.
+                        writer.WriteString(cellPair.Value.Content.ToString());
+
+                    writer.WriteEndElement();
+
+                    // </cell>
+                    writer.WriteEndElement();
+                }
+
+                // </spreadsheet>
+                writer.WriteEndElement();
 
                 writer.WriteEndDocument();
             }
+
+            // The file is no longer changed after saving.
+            Changed = false;
         }
 
         public override object GetCellValue(string name)
@@ -377,6 +413,10 @@ namespace SS
             }
 
             RecalculateCells(cellsToRecalculate);
+
+            // The file has been changed, as we have modified/added a cell.
+            Changed = true;
+
             return cellsToRecalculate;
         }
 

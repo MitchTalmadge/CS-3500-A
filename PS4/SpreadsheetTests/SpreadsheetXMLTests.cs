@@ -136,7 +136,7 @@ namespace SpreadsheetTests
         /* ---------------------- SAVING ---------------------- */
 
         [TestMethod]
-        public void TestSave()
+        public void TestSaveAndReload()
         {
             AbstractSpreadsheet spreadsheet = new Spreadsheet();
 
@@ -148,9 +148,18 @@ namespace SpreadsheetTests
 
             // Prevent test collisions by picking a random file name.
             var randomName = Guid.NewGuid().ToString("N") + ".xml";
-            spreadsheet.Save(randomName);
 
-            CollectionAssert.AreEqual(File.ReadAllBytes(XmlDir + "valid.xml"), File.ReadAllBytes(randomName));
+            // Save the file.
+            spreadsheet.Save(randomName);
+            
+            // Try loading the saved file.
+            AbstractSpreadsheet loadSpreadsheet = new Spreadsheet(randomName, _isValid, _normalize, "default");
+
+            Assert.AreEqual(new Formula("10 + 5"), loadSpreadsheet.GetCellContents("A1"));
+            Assert.AreEqual(new Formula("A1 + 5"), loadSpreadsheet.GetCellContents("A2"));
+            Assert.AreEqual(new Formula("A1 + A2"), loadSpreadsheet.GetCellContents("B9"));
+            Assert.AreEqual(10d, loadSpreadsheet.GetCellContents("AB10"));
+            Assert.AreEqual("Hello World", loadSpreadsheet.GetCellContents("AB6"));
         }
     }
 }
