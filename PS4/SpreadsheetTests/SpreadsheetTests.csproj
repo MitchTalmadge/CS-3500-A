@@ -68,17 +68,42 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="spreadsheets\invalidName.xml" />
-    <Content Include="spreadsheets\missingCellTag.xml" />
-    <Content Include="spreadsheets\missingSpreadsheet.xml" />
-    <Content Include="spreadsheets\missingVersion.xml" />
-    <Content Include="spreadsheets\missingName.xml" />
-    <Content Include="spreadsheets\missingContents.xml" />
-    <Content Include="spreadsheets\invalidFormula.xml" />
-    <Content Include="spreadsheets\stringInFormula.xml" />
-    <Content Include="spreadsheets\overwrite.xml" />
-    <Content Include="spreadsheets\circular.xml" />
-    <Content Include="spreadsheets\valid.xml" />
+    <Content Include="spreadsheets\empty.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\invalidName.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingCellTag.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingSpreadsheetTag.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingVersion.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingName.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingContents.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\invalidFormula.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\stringInFormula.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\overwrite.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\circular.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\valid.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

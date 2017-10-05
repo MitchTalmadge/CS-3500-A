@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 using SpreadsheetUtilities;
 
 namespace SS
@@ -38,17 +39,116 @@ namespace SS
         public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
             : base(isValid, normalize, version)
         {
-            // Make sure version of file matches version provided
-            if (GetSavedVersion(filePath) != version)
+            LoadFile(filePath, version);
+        }
+
+        private void LoadFile(string filePath, string expectedVersion)
+        {
+            try
             {
-                throw new SpreadsheetReadWriteException(
-                    "The provided version does not match the version of the passed in file.");
+                // Make sure version of file matches version provided
+                if (GetSavedVersion(filePath) != expectedVersion)
+                {
+                    throw new SpreadsheetReadWriteException(
+                        "The provided version does not match the version of the passed in file.");
+                }
+
+                var settings = new XmlReaderSettings
+                {
+                    IgnoreWhitespace = true,
+                    IgnoreComments = true
+                };
+
+                // Load the file with the XmlReader
+                using (var reader = XmlReader.Create(filePath, settings))
+                {
+                    // Start element = <spreadsheet>
+                    reader.Read();
+
+                    // Read spreadsheet's children.
+                    while (reader.Read())
+                    {
+                        // Check for closing spreadsheet tag.
+                        if (reader.Name == "spreadsheet" && reader.NodeType == XmlNodeType.EndElement)
+                            break;
+
+                        // Make sure it's a cell.
+                        if (reader.Name != "cell")
+                            throw new SpreadsheetReadWriteException(
+                                "Found an element within <spreadsheet> that is not a <cell>!");
+
+                        // Read and validate name.
+                        reader.Read();
+                        if (reader.Name != "name")
+                            throw new SpreadsheetReadWriteException("The first element under <cell> was not <name>!");
+                        var name = reader.ReadElementContentAsString();
+
+                        // Read content.
+                        if (reader.Name != "contents")
+                            throw new SpreadsheetReadWriteException(
+                                "The second element under <cell> was not <content>!");
+                        var content = reader.ReadElementContentAsString();
+
+                        // Check for closing tag.
+                        if (reader.Name != "cell" || reader.NodeType != XmlNodeType.EndElement)
+                            throw new SpreadsheetReadWriteException(
+                                "A closing </cell> tag was not found for cell: " + name);
+
+                        // Try to add the cell to the spreadsheet.
+                        try
+                        {
+                            SetContentsOfCell(name, content);
+                        }
+                        catch (InvalidNameException)
+                        {
+                            throw new SpreadsheetReadWriteException("A cell had an invalid name: " + name);
+                        }
+                        catch (CircularException)
+                        {
+                            throw new SpreadsheetReadWriteException(
+                                "There is a circular reference in the spreadsheet at cell: " + name);
+                        }
+                        catch (FormulaFormatException)
+                        {
+                            throw new SpreadsheetReadWriteException(
+                                "The Formula could not be parsed for cell: " + name);
+                        }
+                    }
+                }
+            }
+            catch (XmlException e)
+            {
+                throw new SpreadsheetReadWriteException("An unknown error occurred while reading the spreadsheet: " +
+                                                        e.Message);
             }
         }
 
-        public override string GetSavedVersion(string filename)
+        public override string GetSavedVersion(string filePath)
         {
-            throw new NotImplementedException();
+            var settings = new XmlReaderSettings
+            {
+                IgnoreWhitespace = true,
+                IgnoreComments = true
+            };
+
+            // Load the file with the XmlReader
+            using (var reader = XmlReader.Create(filePath, settings))
+            {
+                // Start element = <spreadsheet>
+                if (!reader.Read())
+                    throw new SpreadsheetReadWriteException("The file is empty!");
+
+                // Make sure the element is correct.
+                if (reader.Name != "spreadsheet")
+                    throw new SpreadsheetReadWriteException("The first element of the file is not <spreadsheet>!");
+
+                // Make sure the version exists.
+                string version;
+                if ((version = reader.GetAttribute("version")) == null)
+                    throw new SpreadsheetReadWriteException("The version attribute of <spreadsheet> is missing!");
+
+                return version;
+            }
         }
 
         public override void Save(string filename)
@@ -139,7 +239,7 @@ namespace SS
             // Formula parse
             if (content.StartsWith("="))
             {
-                return SetCellContents(name, new Formula(content.Substring(1), Normalize, IsValid));
+                return SetCellContents(name, new Formula(content.Substring(1), Normalize, IsCellNameValid));
             }
 
             // Anything else is string
@@ -149,18 +249,49 @@ namespace SS
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, double number)
         {
+            // Check null values
+            if (name == null)
+                throw new InvalidNameException();
+
+            // Check normalized name for validity.
+            name = Normalize(name);
+            if (!IsCellNameValid(name))
+                throw new InvalidNameException();
+
             return UpdateCell(name, number);
         }
 
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, string text)
         {
+            // Check null values
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
+            if (name == null)
+                throw new InvalidNameException();
+
+            // Check normalized name for validity.
+            name = Normalize(name);
+            if (!IsCellNameValid(name))
+                throw new InvalidNameException();
+
             return UpdateCell(name, text);
         }
 
         /// <inheritdoc />
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
+            // Check null values
+            if (formula == null)
+                throw new ArgumentNullException(nameof(formula));
+            if (name == null)
+                throw new InvalidNameException();
+
+            // Check normalized name for validity.
+            name = Normalize(name);
+            if (!IsCellNameValid(name))
+                throw new InvalidNameException();
+
             return UpdateCell(name, formula);
         }
 

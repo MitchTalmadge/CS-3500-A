@@ -43,7 +43,79 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void TestLoadSpreadsheetMissingVersion()
         {
-            AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "missingVersion.xml", _isValid, _normalize, "default");
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "missingVersion.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadInvalidFormula()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "invalidFormula.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadInvalidName()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "invalidName.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadMissingCellTag()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "missingCellTag.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadMissingSpreadsheetTag()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "missingSpreadsheetTag.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadMissingName()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "missingName.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadMissingContents()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "missingContents.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadOverwritingCell()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "overwrite.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestLoadStringInFormula()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "stringInFormula.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestEmptyFile()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "empty.xml", _isValid, _normalize, "default");
         }
     }
 }

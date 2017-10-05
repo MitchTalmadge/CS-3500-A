@@ -159,7 +159,7 @@ namespace SS
         /// If there are any problems opening, reading, or closing the file, the method
         /// should throw a SpreadsheetReadWriteException with an explanatory message.
         /// </summary>
-        public abstract string GetSavedVersion(String filename);
+        public abstract string GetSavedVersion(String filePath);
 
         // ADDED FOR PS5
         /// <summary>
