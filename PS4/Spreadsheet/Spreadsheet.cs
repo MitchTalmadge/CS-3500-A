@@ -27,15 +27,31 @@ namespace SS
 
         public override bool Changed { get; protected set; }
 
+        /// <summary>
+        /// Creates a new spreadsheet where all cells are considered valid, cells are case-sensitive, and the version is "default".
+        /// </summary>
         public Spreadsheet() : this(s => true, s => s, "default")
         {
         }
 
+        /// <summary>
+        /// Creates a new spreadsheet.
+        /// </summary>
+        /// <param name="isValid">The spreadsheet cell validator.</param>
+        /// <param name="normalize">The spreadsheet cell name normalizer.</param>
+        /// <param name="version">The version of the spreadsheet.</param>
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid,
             normalize, version)
         {
         }
 
+        /// <summary>
+        /// Loads a spreadsheet from the given file.
+        /// </summary>
+        /// <param name="filePath">The file to load.</param>
+        /// <param name="isValid">The spreadsheet cell validator.</param>
+        /// <param name="normalize">The spreadsheet cell name normalizer.</param>
+        /// <param name="version">The expected version of the loaded file.</param>
         public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
             : base(isValid, normalize, version)
         {
@@ -132,6 +148,7 @@ namespace SS
             }
         }
 
+        /// <inheritdoc />
         public override string GetSavedVersion(string filePath)
         {
             var settings = new XmlReaderSettings
@@ -162,6 +179,7 @@ namespace SS
             }
         }
 
+        /// <inheritdoc />
         public override void Save(string filename)
         {
             var settings = new XmlWriterSettings()
@@ -278,6 +296,7 @@ namespace SS
             return !_cells.TryGetValue(name, out var cell) ? "" : cell.Content;
         }
 
+        /// <inheritdoc />
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
             // Check null values
