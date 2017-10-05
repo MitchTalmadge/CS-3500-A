@@ -32,6 +32,25 @@ namespace SpreadsheetTests
             Assert.AreEqual("Hello World", spreadsheet.GetCellContents("AB6"));
         }
 
+
+        [TestMethod]
+        public void TestLoadStringInFormula()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "stringInFormula.xml", _isValid, _normalize, "default");
+
+            Assert.IsInstanceOfType(spreadsheet.GetCellValue("A1"), typeof(FormulaError));
+        }
+
+        [TestMethod]
+        public void TestLoadOverwritingCell()
+        {
+            AbstractSpreadsheet spreadsheet =
+                new Spreadsheet(XmlDir + "overwrite.xml", _isValid, _normalize, "default");
+
+            Assert.AreEqual("overwritten", spreadsheet.GetCellValue("A1"));
+        }
+
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void TestLoadCircularDependency()
@@ -93,22 +112,6 @@ namespace SpreadsheetTests
         {
             AbstractSpreadsheet spreadsheet =
                 new Spreadsheet(XmlDir + "missingContents.xml", _isValid, _normalize, "default");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(SpreadsheetReadWriteException))]
-        public void TestLoadOverwritingCell()
-        {
-            AbstractSpreadsheet spreadsheet =
-                new Spreadsheet(XmlDir + "overwrite.xml", _isValid, _normalize, "default");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(SpreadsheetReadWriteException))]
-        public void TestLoadStringInFormula()
-        {
-            AbstractSpreadsheet spreadsheet =
-                new Spreadsheet(XmlDir + "stringInFormula.xml", _isValid, _normalize, "default");
         }
 
         [TestMethod]

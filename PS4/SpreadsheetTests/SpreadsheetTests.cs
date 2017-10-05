@@ -384,5 +384,22 @@ namespace SpreadsheetTests
             CollectionAssert.AreEquivalent(new[] {"a3"}, spreadsheet.SetContentsOfCell("a3", "cat").ToArray(),
                 "Indirect dependency was not removed.");
         }
+
+        /// <summary>
+        /// Tests when a cell in a formula is empty, then when that empty cell is updated to a double.
+        /// </summary>
+        [TestMethod]
+        public void TestEmptyCellInFormulaIsUpdated()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // A2 is not set
+            spreadsheet.SetContentsOfCell("A1", "=A2 + 5");
+            Assert.IsInstanceOfType(spreadsheet.GetCellValue("A1"), typeof(FormulaError));
+
+            // A2 is set
+            spreadsheet.SetContentsOfCell("A2", "10");
+            Assert.AreEqual(15d, spreadsheet.GetCellValue("A1"));
+        }
     }
 }
