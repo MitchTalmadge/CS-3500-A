@@ -74,6 +74,15 @@
     <Content Include="spreadsheets\invalidName.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="spreadsheets\cellClosingTagIsInvalid.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingSpreadsheetClosingTag.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="spreadsheets\missingCellClosingTag.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="spreadsheets\missingCellTag.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

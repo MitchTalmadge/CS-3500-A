@@ -435,5 +435,60 @@ namespace SpreadsheetTests
             spreadsheet.Save(Guid.NewGuid().ToString("N") + ".xml");
             Assert.IsFalse(spreadsheet.Changed);
         }
+
+        /// <summary>
+        /// Tests the null and invalid checks in the protected helper methods for 
+        /// SetContentsOfCell that we voted not to change.
+        /// </summary>
+        [TestMethod]
+        public void TestNullAndInvalidChecksInHelperSetters()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+            var pSpreadsheet = new PrivateObject(spreadsheet);
+
+            // Null names
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", null, 10d)));
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", null, "test")));
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", null, new Formula("1+1"))));
+
+            // Invalid Names
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", "A_1", 10d)));
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", "A_1", "test")));
+            Assert.ThrowsException<InvalidNameException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", "A_1", new Formula("1+1"))));
+
+            // Null contents
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", new[] {typeof(string), typeof(string)},
+                        new object[] {"A1", null})));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                ThrowPrivateObjectBaseException(() =>
+                    pSpreadsheet.Invoke("SetCellContents", new[] {typeof(string), typeof(Formula)},
+                        new object[] {"A1", null})));
+        }
+
+        /// <summary>
+        /// Tests the GetCellValue method when using an invalid or null name.
+        /// </summary>
+        [TestMethod]
+        public void TestGetCellValueWithInvalidName()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellValue(null));
+            Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellValue("A_1"));
+        }
     }
 }

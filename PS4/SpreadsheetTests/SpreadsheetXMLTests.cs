@@ -133,6 +133,27 @@ namespace SpreadsheetTests
             AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "empty.xml", _isValid, _normalize, "default");
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestMissingCellClosingTag()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "missingCellClosingTag.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestMissingSpreadsheetClosingTag()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "missingSpreadsheetClosingTag.xml", _isValid, _normalize, "default");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void TestCellClosingTagIsInvalid()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet(XmlDir + "cellClosingTagIsInvalid.xml", _isValid, _normalize, "default");
+        }
+
         /* ---------------------- SAVING ---------------------- */
 
         [TestMethod]
