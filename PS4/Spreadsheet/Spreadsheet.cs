@@ -69,7 +69,10 @@ namespace SS
                 // Load the file with the XmlReader
                 using (var reader = XmlReader.Create(filePath, settings))
                 {
-                    // Start element = <spreadsheet>
+                    // Read "<?xml version="1.0" encoding="utf-8" ?>"
+                    reader.Read();
+
+                    // Read <spreadsheet>
                     reader.Read();
 
                     // Read spreadsheet's children.
@@ -140,9 +143,11 @@ namespace SS
             // Load the file with the XmlReader
             using (var reader = XmlReader.Create(filePath, settings))
             {
-                // Start element = <spreadsheet>
-                if (!reader.Read())
-                    throw new SpreadsheetReadWriteException("The file is empty!");
+                // Read "<?xml version="1.0" encoding="utf-8" ?>"
+                reader.Read();
+
+                // Read <spreadsheet>
+                reader.Read();
 
                 // Make sure the element is correct.
                 if (reader.Name != "spreadsheet")
@@ -159,7 +164,21 @@ namespace SS
 
         public override void Save(string filename)
         {
-            throw new NotImplementedException();
+            var settings = new XmlWriterSettings()
+            {
+                NewLineChars = "\n",
+                Indent = true,
+                IndentChars = "  "
+            };
+
+            using (var writer = XmlWriter.Create(filename, settings))
+            {
+                writer.WriteStartDocument();
+
+
+
+                writer.WriteEndDocument();
+            }
         }
 
         public override object GetCellValue(string name)

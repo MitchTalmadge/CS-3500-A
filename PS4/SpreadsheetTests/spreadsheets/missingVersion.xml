@@ -1,4 +1,6 @@
-﻿<spreadsheet>
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<spreadsheet>
   <cell>
     <name>A1</name>
     <contents>10</contents>
