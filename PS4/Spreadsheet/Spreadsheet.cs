@@ -80,19 +80,18 @@ namespace SS
                         // Read and validate name.
                         reader.Read();
                         if (reader.Name != "name")
-                            throw new SpreadsheetReadWriteException("The first element under <cell> was not <name>!");
+                            throw new SpreadsheetReadWriteException("The first element under a <cell> was not <name>!");
                         var name = reader.ReadElementContentAsString();
 
-                        // Read content.
                         if (reader.Name != "contents")
                             throw new SpreadsheetReadWriteException(
-                                "The second element under <cell> was not <content>!");
+                                "The second element under <cell> was not <contents> for the cell: " + name);
                         var content = reader.ReadElementContentAsString();
 
                         // Check for closing tag.
                         if (reader.Name != "cell" || reader.NodeType != XmlNodeType.EndElement)
                             throw new SpreadsheetReadWriteException(
-                                "A closing </cell> tag was not found for cell: " + name);
+                                "A closing </cell> tag was not found for the cell: " + name);
 
                         // Try to add the cell to the spreadsheet.
                         try
@@ -106,12 +105,12 @@ namespace SS
                         catch (CircularException)
                         {
                             throw new SpreadsheetReadWriteException(
-                                "There is a circular reference in the spreadsheet at cell: " + name);
+                                "There is a circular reference in the spreadsheet at the cell: " + name);
                         }
                         catch (FormulaFormatException)
                         {
                             throw new SpreadsheetReadWriteException(
-                                "The Formula could not be parsed for cell: " + name);
+                                "The Formula could not be parsed for the cell: " + name);
                         }
                     }
                 }
