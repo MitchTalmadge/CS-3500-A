@@ -1,4 +1,19 @@
-﻿Mitch Talmadge, u1031378
+﻿PS5 README:
+
+Mitch Talmadge, u1031378
+10/6/2017
+
+This assignment was very confusing at first, but I'm pretty sure I got it worked out.
+I decided not to add WriteXml/ReadXml methods in Cell because I opted not to include a "Name" field in Cell, 
+and so it made no sense for the cell to read in its name when it does not even have a name... If ya catch my drift. 
+It would have been overly complicated, since I'd have to return the name, and that is pointless when spreadsheet can just 
+read the name itself.
+
+--------------------------------------------------------------------------------------------------------
+
+OLD README FROM PS4: 
+
+Mitch Talmadge, u1031378
 9/28/2017
 
 My initial design thoughts for this project were to use a Dictionary to map names to cells. I started creating a Cell class and decided

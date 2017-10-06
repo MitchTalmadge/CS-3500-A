@@ -15,11 +15,6 @@ namespace SpreadsheetTests
     [TestClass]
     public class SpreadsheetTests
     {
-        //TODO: Test Changed
-        //TODO: Test load
-        //TODO: Test save
-        //TODO: Test re-calculation of cells
-
         /// <summary>
         /// Ensures that contents of cells can be set and retrieved without conflicts when using 
         /// varaible names which only differ in case.
@@ -489,6 +484,47 @@ namespace SpreadsheetTests
 
             Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellValue(null));
             Assert.ThrowsException<InvalidNameException>(() => spreadsheet.GetCellValue("A_1"));
+        }
+
+        /// <summary>
+        /// A stress test in which 500 cells are created that depend on each other, then the last cell that all previous depend on is changed.
+        /// On my computer, the adding part takes 13 seconds and the changing value takes no noticable extra time.
+        /// </summary>
+        [TestMethod]
+        public void TestStressChangeValue()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // Create 500 cells that depend on each other.
+            for (var i = 0; i < 500; i++)
+            {
+                spreadsheet.SetContentsOfCell("A" + i, "=A" + (i + 1));
+            }
+
+            // Change value of A499
+            spreadsheet.SetContentsOfCell("A499", "5");
+        }
+
+        /// <summary>
+        /// A stress test in which 500 cells are created that depend on each other, then the last cell that all previous depend on is changed.
+        /// On my computer, the adding part takes 13 seconds and getting the value 10,000 times takes no noticable extra time.
+        /// </summary>
+        [TestMethod]
+        public void TestStressGetValue()
+        {
+            AbstractSpreadsheet spreadsheet = new Spreadsheet();
+
+            // Create 500 cells that depend on each other.
+            for (var i = 0; i < 500; i++)
+            {
+                spreadsheet.SetContentsOfCell("A" + i, "=A" + (i + 1));
+            }
+
+            // Get value of A1
+            for (var i = 0; i < 10000; i++)
+            {
+                spreadsheet.GetCellValue("A1");
+            }
         }
     }
 }
