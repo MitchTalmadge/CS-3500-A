@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TipCalculatorForm));
             this.totalBillLabel = new System.Windows.Forms.Label();
             this.totalBillTextBox = new System.Windows.Forms.TextBox();
             this.calculatedTipTextBox = new System.Windows.Forms.TextBox();
@@ -135,8 +136,9 @@
             this.Controls.Add(this.calculatedTipTextBox);
             this.Controls.Add(this.totalBillTextBox);
             this.Controls.Add(this.totalBillLabel);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "TipCalculatorForm";
-            this.Text = "Tip Calculator";
+            this.Text = "Guy Calculator";
             this.ResumeLayout(false);
             this.PerformLayout();
 
